@@ -14,6 +14,10 @@ class App extends Component {
     ]
   };
 
+  componentDidUpdate(prevProps, prevState) {
+    console.log(prevState.counters);
+  }
+
   render() {
     return (
       <React.Fragment>
@@ -53,34 +57,36 @@ class App extends Component {
     });
   };
 
-  handleIncrement = counterID => {
+  handleIncrement = counter => {
+    const counters = [...this.state.counters];
+    const index = counters.indexOf(counter);
+    counters[index] = { ...counter };
+    counters[index].value++;
     this.setState({
-      counters: this.state.counters.map(counter => {
-        if (counter.id === counterID) {
-          counter.value++;
-        }
-        return counter;
-      })
+      counters
     });
   };
 
-  handleDecrement = counterID => {
-    this.setState({
-      counters: this.state.counters.map(counter => {
-        if (counter.id === counterID && counter.value > 0) {
-          counter.value--;
-        }
-        return counter;
-      })
-    });
+  handleDecrement = counter => {
+    const counters = [...this.state.counters];
+    const index = counters.indexOf(counter);
+    counters[index] = { ...counter };
+    if (counters[index].value > 0) {
+      counters[index].value--;
+      this.setState({
+        counters
+      });
+    }
   };
 
   resetValues = () => {
+    const counters = JSON.parse(JSON.stringify(this.state.counters));
+    counters.map(counter => {
+      counter.value = 0;
+      return counter;
+    });
     this.setState({
-      counters: this.state.counters.map(counter => {
-        counter.value = 0;
-        return counter;
-      })
+      counters
     });
   };
 }

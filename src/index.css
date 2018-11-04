@@ -28,3 +28,8 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+.customTable tr th,
+.customTable tr td {
+  vertical-align: middle;
+}
