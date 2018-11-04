@@ -7,6 +7,7 @@ class Like extends Component {
       <i
         onClick={() => switchLike(id)}
         className={this.renderLikeIcon(isLiked)}
+        style={{ cursor: "pointer" }}
         aria-hidden="true"
       />
     );
