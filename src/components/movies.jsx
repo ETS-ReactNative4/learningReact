@@ -37,9 +37,9 @@ class Movies extends Component {
   }
 
   handleDelete(id) {
-    deleteMovie(id);
+    const movies = JSON.parse(JSON.stringify(this.state.movies));
     this.setState({
-      movies: JSON.parse(JSON.stringify(getMovies()))
+      movies: movies.filter(movie => movie._id != id)
     });
   }
 
