@@ -104,3 +104,25 @@ export function deleteMovie(id) {
   movies.splice(movies.indexOf(movieInDb), 1);
   return movieInDb;
 }
+
+export function getNumberOfPages(moviePerPage) {
+  return Math.ceil(movies.length / moviePerPage);
+}
+
+export function getMoviesPerPage(moviePerPage, pageNumber) {
+  const startPosition = moviePerPage * (pageNumber - 1);
+  let endPosition = moviePerPage * pageNumber;
+  let filteredMovies = [];
+  if (endPosition > movies.length) {
+    endPosition = movies.length;
+  }
+  for (let i = startPosition; i < endPosition; i++) {
+    filteredMovies.push(movies[i]);
+  }
+  return filteredMovies;
+}
+
+export function handleMovieLike(id) {
+  let movieInDb = movies.find(m => m._id === id);
+  movieInDb.isLiked = !movieInDb.isLiked;
+}

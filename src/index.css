@@ -2,6 +2,14 @@ html {
   font-size: 1.2vw;
 }
 
+h1 {
+  font-size: 2rem !important;
+}
+
+.page-link {
+  border: 1px solid #85b5e4 !important;
+}
+
 @media screen and (max-width: 1000px) and (min-width: 600px) {
   html {
     font-size: 2.5vw;
@@ -22,6 +30,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #cde6f7 !important;
 }
 
 code {
@@ -32,4 +41,6 @@ code {
 .customTable tr th,
 .customTable tr td {
   vertical-align: middle;
+  border-top: 1px solid #335f8c !important;
+  border-bottom: 1px solid #335f8c !important;
 }

@@ -1,16 +1,51 @@
 import React, { Component } from "react";
-import { getMovies, deleteMovie } from "../services/fakeMovieService";
-import Like from "../components/Like";
+import {
+  getMoviesPerPage,
+  getNumberOfPages,
+  deleteMovie,
+  handleMovieLike
+} from "../services/fakeMovieService";
+import Like from "./like";
+import Pagenation from "./pagenation";
 
 class Movies extends Component {
-  state = {
-    movies: JSON.parse(JSON.stringify(getMovies()))
-  };
+  constructor() {
+    super();
+    let moviePerPage = 4;
+    let pageNumber = 1;
+    this.state = {
+      pageNumber: 1,
+      moviePerPage: moviePerPage,
+      movies: JSON.parse(
+        JSON.stringify(getMoviesPerPage(moviePerPage, pageNumber))
+      )
+    };
+  }
 
-  componentDidUpdate(prevProps, prevState) {}
+  componentDidUpdate(prevProps, prevState) {
+    //console.log(prevState);
+  }
 
   render() {
-    return <div className="container">{this.renderTable()}</div>;
+    return (
+      <div className="container">
+        {this.renderTable()}
+        {this.renderPagenation()}
+      </div>
+    );
+  }
+
+  renderPagenation() {
+    const numberOfPages = getNumberOfPages(this.state.moviePerPage);
+    return this.state.movies.length === 0 ? (
+      ""
+    ) : (
+      <Pagenation
+        numberOfPages={numberOfPages}
+        pageClick={this.handlePageClick}
+        pageNumber={this.state.pageNumber}
+      />
+    );
   }
 
   renderTable() {
@@ -36,14 +71,28 @@ class Movies extends Component {
     );
   }
 
-  handleDelete(id) {
-    const movies = JSON.parse(JSON.stringify(this.state.movies));
+  handlePageClick = pageNumber => {
     this.setState({
-      movies: movies.filter(movie => movie._id != id)
+      pageNumber,
+      movies: JSON.parse(
+        JSON.stringify(getMoviesPerPage(this.state.moviePerPage, pageNumber))
+      )
     });
-  }
+  };
+
+  handleDelete = id => {
+    deleteMovie(id);
+    this.setState({
+      movies: JSON.parse(
+        JSON.stringify(
+          getMoviesPerPage(this.state.moviePerPage, this.state.pageNumber)
+        )
+      )
+    });
+  };
 
   handleLike = id => {
+    handleMovieLike(id);
     const movies = JSON.parse(JSON.stringify(this.state.movies));
     movies.forEach(movie => {
       if (movie._id === id) {
