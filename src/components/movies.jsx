@@ -40,35 +40,35 @@ class Movies extends Component {
     return this.state.movies.length === 0 ? (
       ""
     ) : (
-      <Pagenation
-        numberOfPages={numberOfPages}
-        pageClick={this.handlePageClick}
-        pageNumber={this.state.pageNumber}
-      />
-    );
+        <Pagenation
+          numberOfPages={numberOfPages}
+          pageClick={this.handlePageClick}
+          pageNumber={this.state.pageNumber}
+        />
+      );
   }
 
   renderTable() {
     return this.state.movies.length === 0 ? (
       <h1>No movies in the basket</h1>
     ) : (
-      <React.Fragment>
-        <h1>There are {this.state.movies.length} movies in the basket</h1>
-        <table className="table customTable">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Genre</th>
-              <th>Stock</th>
-              <th>Rate</th>
-              <th />
-              <th />
-            </tr>
-          </thead>
-          <tbody>{this.renderMovieList()}</tbody>
-        </table>
-      </React.Fragment>
-    );
+        <React.Fragment>
+          <h1>There are {this.state.movies.length} movies in the basket</h1>
+          <table className="table customTable">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Genre</th>
+                <th>Stock</th>
+                <th>Rate</th>
+                <th />
+                <th />
+              </tr>
+            </thead>
+            <tbody>{this.renderMovieList()}</tbody>
+          </table>
+        </React.Fragment>
+      );
   }
 
   handlePageClick = pageNumber => {
@@ -82,12 +82,19 @@ class Movies extends Component {
 
   handleDelete = id => {
     deleteMovie(id);
-    this.setState({
-      movies: JSON.parse(
+    let movies = JSON.parse(
+      JSON.stringify(
+        getMoviesPerPage(this.state.moviePerPage, this.state.pageNumber)));
+    let pageNumber = this.state.pageNumber;
+    if (pageNumber > 1 && movies.length === 0) {
+      pageNumber--;
+      movies = JSON.parse(
         JSON.stringify(
-          getMoviesPerPage(this.state.moviePerPage, this.state.pageNumber)
-        )
-      )
+          getMoviesPerPage(this.state.moviePerPage, pageNumber)));
+    }
+    this.setState({
+      pageNumber,
+      movies
     });
   };
 
