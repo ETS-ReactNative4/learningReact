@@ -102,7 +102,7 @@ export function saveMovie(movie) {
 export function deleteMovie(id) {
   let movieInDb = movies.find(m => m._id === id);
   movies.splice(movies.indexOf(movieInDb), 1);
-  return movieInDb;
+  return movies.length;
 }
 
 export function getNumberOfPages(moviePerPage) {
@@ -125,4 +125,8 @@ export function getMoviesPerPage(moviePerPage, pageNumber) {
 export function handleMovieLike(id) {
   let movieInDb = movies.find(m => m._id === id);
   movieInDb.isLiked = !movieInDb.isLiked;
+}
+
+export function getNumberOfMovies() {
+  return movies.length;
 }
