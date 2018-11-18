@@ -50,3 +50,12 @@ code {
   margin-top: 0.5%;
   width: auto;
 }
+
+.myListGroupItem {
+  border: 1px solid #335f8c !important;
+  text-align: center;
+}
+
+.myBackColor {
+  background-color: #cde6f7 !important;
+}

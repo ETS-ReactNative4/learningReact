@@ -1,15 +1,16 @@
 import React, { Component } from "react";
 import {
   getMoviesPerPage,
-  getNumberOfPages,
   deleteMovie,
   handleMovieLike,
   getNumberOfMovies
 } from "../services/fakeMovieService";
+import { getGenres } from "../services/fakeGenreService";
 import Like from "./like";
 import Pagenation from "./pagenation";
 import SelectSingle from "./selectSingle";
 import { deepCopy } from "../utilities/common";
+import ListGroup from "./listGroup";
 //import _ from "lodash";
 
 class Movies extends Component {
@@ -17,7 +18,9 @@ class Movies extends Component {
     super();
     const moviePerPage = 4;
     const pageNumber = 1;
+    const listItemSelected = 1;
     const movies = deepCopy(getMoviesPerPage(moviePerPage, pageNumber));
+    const genres = deepCopy([{ _id: 0, name: "All Movies" }, ...getGenres()]);
     const preFilterArray = [2, 4, 8];
     let filterArray = [];
     const totalNumberOfMovies = getNumberOfMovies();
@@ -33,7 +36,9 @@ class Movies extends Component {
       moviePerPage,
       movies,
       allFilterValue,
-      filterArray
+      filterArray,
+      genres,
+      listItemSelected
     };
   }
 
@@ -41,9 +46,18 @@ class Movies extends Component {
 
   render() {
     return (
-      <div className="container">
-        {this.renderTable()}
-        {this.renderPagenation()}
+      <div
+        className="container-fluid"
+        style={{ display: "flex", paddingLeft: "0" }}
+        id="mainTab"
+      >
+        <div id="genreTab" style={{ width: "15%" }}>
+          {this.renderGenreTab()}
+        </div>
+        <div id="movieTab" style={{ width: "80%", marginLeft: "2%" }}>
+          {this.renderTable()}
+          {this.renderPagenation()}
+        </div>
       </div>
     );
   }
@@ -54,8 +68,22 @@ class Movies extends Component {
     this.setState({ movies, moviePerPage, pageNumber: 1 });
   };
 
+  handleListClick = () => {};
+
+  renderGenreTab() {
+    return (
+      <ListGroup
+        listItems={this.state.genres}
+        listItemSelected={this.state.listItemSelected}
+        onListClick={this.state.handleListClick}
+      />
+    );
+  }
+
   renderPagenation() {
-    const numberOfPages = getNumberOfPages(this.state.moviePerPage);
+    const numberOfPages = Math.ceil(
+      this.state.allFilterValue / this.state.moviePerPage
+    );
     return this.state.movies.length === 0 ||
       this.state.movies.length === this.state.allFilterValue ? (
       ""
