@@ -1,4 +1,5 @@
 import * as genresAPI from "./fakeGenreService";
+import _ from "lodash";
 
 const movies = [
   {
@@ -73,6 +74,14 @@ const movies = [
     numberInStock: 7,
     dailyRentalRate: 3.5,
     isLiked: false
+  },
+  {
+    _id: "5b21ca3eeb7f6fbccd47294A",
+    title: "Inception",
+    genre: { _id: "5b21ca3eeb7f6fbccd471818", name: "Action" },
+    numberInStock: 10,
+    dailyRentalRate: 5,
+    isLiked: false
   }
 ];
 
@@ -109,17 +118,19 @@ export function getNumberOfPages(moviePerPage) {
   return Math.ceil(movies.length / moviePerPage);
 }
 
-export function getMoviesPerPage(moviePerPage, pageNumber) {
+export function getMoviesPerPage(moviePerPage, pageNumber, filterID) {
+  filterID = filterID || 0;
+  let genreMovies;
+  if (filterID === 0) {
+    genreMovies = movies;
+  } else {
+    genreMovies = movies.filter(movie => movie.genre._id === filterID);
+  }
   const startPosition = moviePerPage * (pageNumber - 1);
-  let endPosition = moviePerPage * pageNumber;
-  let filteredMovies = [];
-  if (endPosition > movies.length) {
-    endPosition = movies.length;
-  }
-  for (let i = startPosition; i < endPosition; i++) {
-    filteredMovies.push(movies[i]);
-  }
-  return filteredMovies;
+  return _(genreMovies)
+    .slice(startPosition)
+    .take(moviePerPage)
+    .value();
 }
 
 export function handleMovieLike(id) {
@@ -127,6 +138,13 @@ export function handleMovieLike(id) {
   movieInDb.isLiked = !movieInDb.isLiked;
 }
 
-export function getNumberOfMovies() {
-  return movies.length;
+export function getNumberOfMovies(filterID) {
+  filterID = filterID || 0;
+  let genreMovies;
+  if (filterID === 0) {
+    genreMovies = movies;
+  } else {
+    genreMovies = movies.filter(movie => movie.genre._id === filterID);
+  }
+  return genreMovies.length;
 }

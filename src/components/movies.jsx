@@ -19,11 +19,18 @@ class Movies extends Component {
     const moviePerPage = 4;
     const pageNumber = 1;
     const listItemSelected = 1;
-    const movies = deepCopy(getMoviesPerPage(moviePerPage, pageNumber));
+
     const genres = deepCopy([{ _id: 0, name: "All Movies" }, ...getGenres()]);
+    const movies = deepCopy(
+      getMoviesPerPage(
+        moviePerPage,
+        pageNumber,
+        genres[listItemSelected - 1]._id
+      )
+    );
     const preFilterArray = [2, 4, 8];
     let filterArray = [];
-    const totalNumberOfMovies = getNumberOfMovies();
+    const totalNumberOfMovies = getNumberOfMovies(0);
     preFilterArray.forEach(value => {
       if (value < totalNumberOfMovies) {
         filterArray.push(value);
@@ -64,18 +71,62 @@ class Movies extends Component {
 
   handleOnChangeSelect = event => {
     const moviePerPage = parseInt(event.target.value);
-    const movies = deepCopy(getMoviesPerPage(moviePerPage, 1));
+    const movies = deepCopy(
+      getMoviesPerPage(
+        moviePerPage,
+        1,
+        this.state.genres[this.state.listItemSelected - 1]._id
+      )
+    );
     this.setState({ movies, moviePerPage, pageNumber: 1 });
   };
 
-  handleListClick = () => {};
+  handleListClick = id => {
+    let movies;
+    let { moviePerPage, genres } = this.state;
+    const pageNumber = 1;
+    let listItemSelected;
+    genres.forEach((genre, index) => {
+      if (genre._id === id) {
+        listItemSelected = index + 1;
+      }
+    });
+    const totalNumberOfMovies = getNumberOfMovies(
+      this.state.genres[listItemSelected - 1]._id
+    );
+    let filterArray = this.updateFilterArray(totalNumberOfMovies);
+    const allFilterValue = filterArray[filterArray.length - 1];
+    if (moviePerPage >= allFilterValue) {
+      moviePerPage = allFilterValue;
+    } else {
+      const filterValid = filterArray.indexOf(moviePerPage);
+      if (filterValid !== -1) {
+        moviePerPage = filterArray[filterValid];
+      } else {
+        if (totalNumberOfMovies >= 4) {
+          moviePerPage = 4;
+        } else {
+          moviePerPage = 2;
+        }
+      }
+    }
+    movies = deepCopy(getMoviesPerPage(moviePerPage, pageNumber, id));
+    this.setState({
+      movies,
+      listItemSelected,
+      pageNumber,
+      moviePerPage,
+      filterArray,
+      allFilterValue
+    });
+  };
 
   renderGenreTab() {
     return (
       <ListGroup
         listItems={this.state.genres}
         listItemSelected={this.state.listItemSelected}
-        onListClick={this.state.handleListClick}
+        onListClick={this.handleListClick}
       />
     );
   }
@@ -146,28 +197,34 @@ class Movies extends Component {
     this.setState({
       pageNumber,
       movies: JSON.parse(
-        JSON.stringify(getMoviesPerPage(this.state.moviePerPage, pageNumber))
+        JSON.stringify(
+          getMoviesPerPage(
+            this.state.moviePerPage,
+            pageNumber,
+            this.state.genres[this.state.listItemSelected - 1]._id
+          )
+        )
       )
     });
   };
 
   handleDelete = id => {
-    const totalNumberOfMovies = deleteMovie(id);
+    deleteMovie(id);
+    const totalNumberOfMovies = getNumberOfMovies(
+      this.state.genres[this.state.listItemSelected - 1]._id
+    );
     let pageNumber = this.state.pageNumber;
     if (pageNumber > 1 && this.state.movies.length === 1) {
       pageNumber--;
     }
     const movies = deepCopy(
-      getMoviesPerPage(this.state.moviePerPage, pageNumber)
+      getMoviesPerPage(
+        this.state.moviePerPage,
+        pageNumber,
+        this.state.genres[this.state.listItemSelected - 1]._id
+      )
     );
-    let filterArray = [];
-    let preFilterArray = deepCopy(this.state.filterArray);
-    preFilterArray.forEach(value => {
-      if (value < totalNumberOfMovies) {
-        filterArray.push(value);
-      }
-    });
-    filterArray.push(totalNumberOfMovies);
+    let filterArray = this.updateFilterArray(totalNumberOfMovies);
     const allFilterValue = filterArray[filterArray.length - 1];
     let moviePerPage = this.state.moviePerPage;
     if (moviePerPage === allFilterValue + 1) {
@@ -217,6 +274,18 @@ class Movies extends Component {
         </td>
       </tr>
     ));
+  }
+
+  updateFilterArray(totalNumberOfMovies) {
+    let filterArray = [];
+    let preFilterArray = [2, 4, 8];
+    preFilterArray.forEach(value => {
+      if (value < totalNumberOfMovies) {
+        filterArray.push(value);
+      }
+    });
+    filterArray.push(totalNumberOfMovies);
+    return filterArray;
   }
 }
 
