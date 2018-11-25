@@ -11,15 +11,24 @@ import Pagenation from "./pagenation";
 import SelectSingle from "./selectSingle";
 import { deepCopy } from "../utilities/common";
 import ListGroup from "./listGroup";
-//import _ from "lodash";
+import _ from "lodash";
 
 class Movies extends Component {
-  constructor() {
-    super();
+  state = {
+    pageNumber: 1,
+    moviePerPage: 4,
+    movies: [],
+    allFilterValue: 0,
+    filterArray: [],
+    genres: [],
+    listItemSelected: 1,
+    sortingProps: []
+  };
+
+  componentDidMount() {
     const moviePerPage = 4;
     const pageNumber = 1;
     const listItemSelected = 1;
-
     const genres = deepCopy([{ _id: 0, name: "All Movies" }, ...getGenres()]);
     const movies = deepCopy(
       getMoviesPerPage(
@@ -38,15 +47,12 @@ class Movies extends Component {
     });
     filterArray.push(totalNumberOfMovies);
     const allFilterValue = filterArray[filterArray.length - 1];
-    this.state = {
-      pageNumber,
-      moviePerPage,
+    this.setState({
       movies,
       allFilterValue,
       filterArray,
-      genres,
-      listItemSelected
-    };
+      genres
+    });
   }
 
   componentDidUpdate(prevProps, prevState) {}
@@ -69,9 +75,34 @@ class Movies extends Component {
     );
   }
 
+  handleSort = SortColumn => {
+    let sortingProps = deepCopy(this.state.sortingProps);
+    let columnnFound = false;
+    sortingProps = sortingProps.map(sortingProp => {
+      if (sortingProp.SortColumn === SortColumn) {
+        columnnFound = true;
+        if (sortingProp.SortOrder === "asc") {
+          sortingProp.SortOrder = "desc";
+          return sortingProp;
+        } else {
+          return { SortColumn: "RemoveMe" };
+        }
+      } else {
+        return sortingProp;
+      }
+    });
+    if (!columnnFound) {
+      sortingProps.push({ SortColumn, SortOrder: "asc" });
+    }
+    sortingProps = sortingProps.filter(
+      sortingProp => sortingProp.SortColumn !== "RemoveMe"
+    );
+    this.setState({ sortingProps });
+  };
+
   handleOnChangeSelect = event => {
     const moviePerPage = parseInt(event.target.value);
-    const movies = deepCopy(
+    let movies = deepCopy(
       getMoviesPerPage(
         moviePerPage,
         1,
@@ -148,6 +179,17 @@ class Movies extends Component {
   }
 
   renderTable() {
+    let movies = deepCopy(this.state.movies);
+    const sortingProps = this.state.sortingProps;
+    let sortingColumns = [];
+    let sortingOrder = [];
+    sortingProps.forEach(sortingProp => {
+      sortingColumns.push(sortingProp.SortColumn);
+      sortingOrder.push(sortingProp.SortOrder);
+    });
+    movies = _(movies)
+      .orderBy(sortingColumns, sortingOrder)
+      .value();
     return this.state.movies.length === 0 ? (
       <h1>No movies in the basket</h1>
     ) : (
@@ -168,18 +210,63 @@ class Movies extends Component {
         <table className="table customTable">
           <thead>
             <tr>
-              <th>Title</th>
-              <th>Genre</th>
-              <th>Stock</th>
-              <th>Rate</th>
+              <th>Title {this.renderSortDiv("title")}</th>
+              <th>Genre {this.renderSortDiv("genre.name")}</th>
+              <th>Stock {this.renderSortDiv("numberInStock")}</th>
+              <th>Rate {this.renderSortDiv("dailyRentalRate")}</th>
               <th />
               <th />
             </tr>
           </thead>
-          <tbody>{this.renderMovieList()}</tbody>
+          <tbody>{this.renderMovieList(movies)}</tbody>
         </table>
       </React.Fragment>
     );
+  }
+
+  renderSortDiv(headerName) {
+    let arrowSymbol = [
+      <i
+        key={headerName + "_icon"}
+        className={this.renderHeaderClass(headerName)}
+        aria-hidden="true"
+        style={{ cursor: "pointer", margin: "0 2% 0 2%" }}
+        onClick={() => this.handleSort(headerName)}
+      />
+    ];
+    let sortPos = 0;
+    this.state.sortingProps.forEach((sortingProp, index) => {
+      if (sortingProp.SortColumn === headerName) {
+        sortPos = index + 1;
+      }
+    });
+    if (sortPos > 0) {
+      arrowSymbol.push(
+        <span
+          key={headerName + "_sortPos"}
+          className="badge badge-pill badge-dark"
+        >
+          {sortPos}
+        </span>
+      );
+    }
+    return <React.Fragment>{arrowSymbol}</React.Fragment>;
+  }
+
+  renderHeaderClass(headerName) {
+    let sortOrder = "none";
+    this.state.sortingProps.forEach(sortingProp => {
+      if (sortingProp.SortColumn === headerName) {
+        sortOrder = sortingProp.SortOrder;
+      }
+    });
+    if (sortOrder === "asc") {
+      return "fa fa-arrow-up";
+    } else if (sortOrder === "desc") {
+      return "fa fa-arrow-down";
+    } else {
+      return "fa fa-sort";
+    }
   }
 
   renderOptionList() {
@@ -250,8 +337,8 @@ class Movies extends Component {
     this.setState({ movies });
   };
 
-  renderMovieList() {
-    return this.state.movies.map(movie => (
+  renderMovieList(movies) {
+    return movies.map(movie => (
       <tr key={movie._id}>
         <td>{movie.title}</td>
         <td>{movie.genre.name}</td>
