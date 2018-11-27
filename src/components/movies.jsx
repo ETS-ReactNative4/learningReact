@@ -157,6 +157,8 @@ class Movies extends Component {
       <ListGroup
         listItems={this.state.genres}
         listItemSelected={this.state.listItemSelected}
+        idProp={"_id"}
+        nameProp={"name"}
         onListClick={this.handleListClick}
       />
     );
@@ -230,26 +232,24 @@ class Movies extends Component {
         key={headerName + "_icon"}
         className={this.renderHeaderClass(headerName)}
         aria-hidden="true"
-        style={{ cursor: "pointer", margin: "0 2% 0 2%" }}
+        style={{ cursor: "pointer", margin: "0 7% 0 2%", width: "5%" }}
         onClick={() => this.handleSort(headerName)}
       />
     ];
-    let sortPos = 0;
+    let sortPos = "sort";
     this.state.sortingProps.forEach((sortingProp, index) => {
       if (sortingProp.SortColumn === headerName) {
         sortPos = index + 1;
       }
     });
-    if (sortPos > 0) {
-      arrowSymbol.push(
-        <span
-          key={headerName + "_sortPos"}
-          className="badge badge-pill badge-dark"
-        >
-          {sortPos}
-        </span>
-      );
-    }
+    arrowSymbol.push(
+      <span
+        key={headerName + "_sortPos"}
+        className="badge badge-pill badge-dark"
+      >
+        {sortPos}
+      </span>
+    );
     return <React.Fragment>{arrowSymbol}</React.Fragment>;
   }
 
@@ -261,11 +261,11 @@ class Movies extends Component {
       }
     });
     if (sortOrder === "asc") {
-      return "fa fa-arrow-up";
+      return "fa fa-arrow-up fa-sm";
     } else if (sortOrder === "desc") {
-      return "fa fa-arrow-down";
+      return "fa fa-arrow-down fa-sm";
     } else {
-      return "fa fa-sort";
+      return "fa fa-sort fa-lg";
     }
   }
 

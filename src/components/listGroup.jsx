@@ -3,14 +3,10 @@ import ListGroupItem from "./listGroupItem";
 import Prototypes from "prop-types";
 
 const ListGroup = props => {
-  const { onListClick, listItems, listItemSelected } = props;
-  return (
-    <ul className="list-group">
-      {renderListGroupItem(onListClick, listItems, listItemSelected)}
-    </ul>
-  );
+  const { onListClick, listItems, listItemSelected, idProp, nameProp } = props;
+  return <ul className="list-group">{renderListGroupItem()}</ul>;
 
-  function renderListGroupItem(onListClick, listItems, listItemSelected) {
+  function renderListGroupItem() {
     return listItems.map((item, index) => {
       let isSelected = false;
       if (index + 1 === listItemSelected) {
@@ -19,9 +15,9 @@ const ListGroup = props => {
       return (
         <ListGroupItem
           onListClick={onListClick}
-          key={item._id}
-          id={item._id}
-          textValue={item.name}
+          key={item[idProp]}
+          id={item[idProp]}
+          textValue={item[nameProp]}
           isSelected={isSelected}
         />
       );
