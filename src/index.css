@@ -40,7 +40,7 @@ code {
 
 .customTable tr th,
 .customTable tr td {
-  vertical-align: middle;
+  vertical-align: middle !important;
   border-top: 1px solid #335f8c !important;
   border-bottom: 1px solid #335f8c !important;
 }

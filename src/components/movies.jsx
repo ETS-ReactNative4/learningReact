@@ -10,8 +10,8 @@ import Like from "./like";
 import Pagenation from "./pagenation";
 import SelectSingle from "./selectSingle";
 import { deepCopy } from "../utilities/common";
+import Table from "../utilities/table";
 import ListGroup from "./listGroup";
-import _ from "lodash";
 
 class Movies extends Component {
   state = {
@@ -22,7 +22,16 @@ class Movies extends Component {
     filterArray: [],
     genres: [],
     listItemSelected: 1,
-    sortingProps: []
+    sortingProps: [],
+    headerList: ["Title", "Genre", "Stock", "Rate", "", ""],
+    bodyPropsName: [
+      "title",
+      "genre",
+      "numberInStock",
+      "dailyRentalRate",
+      "like",
+      "delete"
+    ]
   };
 
   componentDidMount() {
@@ -74,6 +83,206 @@ class Movies extends Component {
       </div>
     );
   }
+
+  renderGenreTab() {
+    return (
+      <ListGroup
+        listItems={this.state.genres}
+        listItemSelected={this.state.listItemSelected}
+        idProp={"_id"}
+        nameProp={"name"}
+        onListClick={this.handleListClick}
+      />
+    );
+  }
+
+  renderPagenation() {
+    const numberOfPages = Math.ceil(
+      this.state.allFilterValue / this.state.moviePerPage
+    );
+    return this.state.movies.length === 0 ||
+      this.state.movies.length === this.state.allFilterValue ? (
+      ""
+    ) : (
+      <Pagenation
+        numberOfPages={numberOfPages}
+        pageClick={this.handlePageClick}
+        pageNumber={this.state.pageNumber}
+      />
+    );
+  }
+
+  renderTable() {
+    const bodyPropsName = deepCopy(this.state.bodyPropsName);
+    const headerList = this.state.headerList
+      .filter(header => header !== "")
+      .map((header, index) => {
+        return (
+          <React.Fragment>
+            {header} {this.renderSortDiv(bodyPropsName[index])}
+          </React.Fragment>
+        );
+      });
+
+    let bodyContent = deepCopy(this.state.movies);
+    bodyContent.forEach(content => {
+      content.like = (
+        <Like
+          switchLike={this.handleLike}
+          id={content._id}
+          isLiked={content.isLiked}
+        />
+      );
+      content.delete = (
+        <button
+          className="btn btn-danger btn-md"
+          onClick={() => this.handleDelete(content._id)}
+        >
+          Delete
+        </button>
+      );
+      content.genre = content.genre.name;
+    });
+
+    return this.state.movies.length === 0 ? (
+      <h1>No movies in the basket</h1>
+    ) : (
+      <React.Fragment>
+        <div className="moviePageHeader">
+          <h1 style={{ float: "left" }}>
+            There are {this.state.movies.length} movies in the basket
+          </h1>
+          <SelectSingle
+            labelName={"Movies Per Page"}
+            uniqueID={"MoviePerPage"}
+            onChangeSelect={this.handleOnChangeSelect}
+            optionList={this.renderOptionList()}
+            valueList={this.state.filterArray}
+            moviePerPage={this.state.moviePerPage}
+          />
+          <Table
+            tableClasses={"table customTable"}
+            headerList={headerList}
+            bodyContent={bodyContent}
+            bodyPropsName={bodyPropsName}
+            sortingProps={this.state.sortingProps}
+          />
+        </div>
+      </React.Fragment>
+    );
+  }
+
+  renderSortDiv(headerName) {
+    let arrowSymbol = [
+      <i
+        key={headerName + "_icon"}
+        className={this.renderHeaderClass(headerName)}
+        aria-hidden="true"
+        style={{ cursor: "pointer", margin: "0 4% 0 2%" }}
+        onClick={() => this.handleSort(headerName)}
+      />
+    ];
+    let sortPos = 0;
+    this.state.sortingProps.forEach((sortingProp, index) => {
+      if (sortingProp.SortColumn === headerName) {
+        sortPos = index + 1;
+      }
+    });
+    arrowSymbol.push(
+      <span
+        key={headerName + "_sortPos"}
+        className="badge badge-pill badge-dark"
+        style={{ opacity: sortPos === 0 ? 0 : 1 }}
+      >
+        {sortPos}
+      </span>
+    );
+    return <React.Fragment>{arrowSymbol}</React.Fragment>;
+  }
+
+  renderHeaderClass(headerName) {
+    let sortOrder = "none";
+    this.state.sortingProps.forEach(sortingProp => {
+      if (sortingProp.SortColumn === headerName) {
+        sortOrder = sortingProp.SortOrder;
+      }
+    });
+    if (sortOrder === "asc") {
+      return "fa fa-sort-asc";
+    } else if (sortOrder === "desc") {
+      return "fa fa-sort-desc";
+    } else {
+      return "fa fa-sort";
+    }
+  }
+
+  renderOptionList() {
+    const filterArray = deepCopy(this.state.filterArray);
+    const lastIndex = filterArray.length - 1;
+    return filterArray.map((filter, index) => {
+      if (index === lastIndex) {
+        filter = "All Movies";
+      }
+      return filter;
+    });
+  }
+
+  handlePageClick = pageNumber => {
+    this.setState({
+      pageNumber,
+      movies: JSON.parse(
+        JSON.stringify(
+          getMoviesPerPage(
+            this.state.moviePerPage,
+            pageNumber,
+            this.state.genres[this.state.listItemSelected - 1]._id
+          )
+        )
+      )
+    });
+  };
+
+  handleDelete = id => {
+    deleteMovie(id);
+    const totalNumberOfMovies = getNumberOfMovies(
+      this.state.genres[this.state.listItemSelected - 1]._id
+    );
+    let pageNumber = this.state.pageNumber;
+    if (pageNumber > 1 && this.state.movies.length === 1) {
+      pageNumber--;
+    }
+    const movies = deepCopy(
+      getMoviesPerPage(
+        this.state.moviePerPage,
+        pageNumber,
+        this.state.genres[this.state.listItemSelected - 1]._id
+      )
+    );
+    let filterArray = this.updateFilterArray(totalNumberOfMovies);
+    const allFilterValue = filterArray[filterArray.length - 1];
+    let moviePerPage = this.state.moviePerPage;
+    if (moviePerPage === allFilterValue + 1) {
+      moviePerPage = allFilterValue;
+    }
+    this.setState({
+      pageNumber,
+      movies,
+      filterArray,
+      allFilterValue,
+      moviePerPage
+    });
+  };
+
+  handleLike = id => {
+    handleMovieLike(id);
+    const movies = JSON.parse(JSON.stringify(this.state.movies));
+    movies.forEach(movie => {
+      if (movie._id === id) {
+        movie.isLiked = !movie.isLiked;
+      }
+    });
+    this.setState({ movies });
+  };
 
   handleSort = SortColumn => {
     let sortingProps = deepCopy(this.state.sortingProps);
@@ -151,217 +360,6 @@ class Movies extends Component {
       allFilterValue
     });
   };
-
-  renderGenreTab() {
-    return (
-      <ListGroup
-        listItems={this.state.genres}
-        listItemSelected={this.state.listItemSelected}
-        idProp={"_id"}
-        nameProp={"name"}
-        onListClick={this.handleListClick}
-      />
-    );
-  }
-
-  renderPagenation() {
-    const numberOfPages = Math.ceil(
-      this.state.allFilterValue / this.state.moviePerPage
-    );
-    return this.state.movies.length === 0 ||
-      this.state.movies.length === this.state.allFilterValue ? (
-      ""
-    ) : (
-      <Pagenation
-        numberOfPages={numberOfPages}
-        pageClick={this.handlePageClick}
-        pageNumber={this.state.pageNumber}
-      />
-    );
-  }
-
-  renderTable() {
-    let movies = deepCopy(this.state.movies);
-    const sortingProps = this.state.sortingProps;
-    let sortingColumns = [];
-    let sortingOrder = [];
-    sortingProps.forEach(sortingProp => {
-      sortingColumns.push(sortingProp.SortColumn);
-      sortingOrder.push(sortingProp.SortOrder);
-    });
-    movies = _(movies)
-      .orderBy(sortingColumns, sortingOrder)
-      .value();
-    return this.state.movies.length === 0 ? (
-      <h1>No movies in the basket</h1>
-    ) : (
-      <React.Fragment>
-        <div className="moviePageHeader">
-          <h1 style={{ float: "left" }}>
-            There are {this.state.movies.length} movies in the basket
-          </h1>
-          <SelectSingle
-            labelName={"Movies Per Page"}
-            uniqueID={"MoviePerPage"}
-            onChangeSelect={this.handleOnChangeSelect}
-            optionList={this.renderOptionList()}
-            valueList={this.state.filterArray}
-            moviePerPage={this.state.moviePerPage}
-          />
-        </div>
-        <table className="table customTable">
-          <thead>
-            <tr>
-              <th>Title {this.renderSortDiv("title")}</th>
-              <th>Genre {this.renderSortDiv("genre.name")}</th>
-              <th>Stock {this.renderSortDiv("numberInStock")}</th>
-              <th>Rate {this.renderSortDiv("dailyRentalRate")}</th>
-              <th />
-              <th />
-            </tr>
-          </thead>
-          <tbody>{this.renderMovieList(movies)}</tbody>
-        </table>
-      </React.Fragment>
-    );
-  }
-
-  renderSortDiv(headerName) {
-    let arrowSymbol = [
-      <i
-        key={headerName + "_icon"}
-        className={this.renderHeaderClass(headerName)}
-        aria-hidden="true"
-        style={{ cursor: "pointer", margin: "0 7% 0 2%", width: "5%" }}
-        onClick={() => this.handleSort(headerName)}
-      />
-    ];
-    let sortPos = "sort";
-    this.state.sortingProps.forEach((sortingProp, index) => {
-      if (sortingProp.SortColumn === headerName) {
-        sortPos = index + 1;
-      }
-    });
-    arrowSymbol.push(
-      <span
-        key={headerName + "_sortPos"}
-        className="badge badge-pill badge-dark"
-      >
-        {sortPos}
-      </span>
-    );
-    return <React.Fragment>{arrowSymbol}</React.Fragment>;
-  }
-
-  renderHeaderClass(headerName) {
-    let sortOrder = "none";
-    this.state.sortingProps.forEach(sortingProp => {
-      if (sortingProp.SortColumn === headerName) {
-        sortOrder = sortingProp.SortOrder;
-      }
-    });
-    if (sortOrder === "asc") {
-      return "fa fa-arrow-up fa-sm";
-    } else if (sortOrder === "desc") {
-      return "fa fa-arrow-down fa-sm";
-    } else {
-      return "fa fa-sort fa-lg";
-    }
-  }
-
-  renderOptionList() {
-    const filterArray = deepCopy(this.state.filterArray);
-    const lastIndex = filterArray.length - 1;
-    return filterArray.map((filter, index) => {
-      if (index === lastIndex) {
-        filter = "All Movies";
-      }
-      return filter;
-    });
-  }
-
-  handlePageClick = pageNumber => {
-    this.setState({
-      pageNumber,
-      movies: JSON.parse(
-        JSON.stringify(
-          getMoviesPerPage(
-            this.state.moviePerPage,
-            pageNumber,
-            this.state.genres[this.state.listItemSelected - 1]._id
-          )
-        )
-      )
-    });
-  };
-
-  handleDelete = id => {
-    deleteMovie(id);
-    const totalNumberOfMovies = getNumberOfMovies(
-      this.state.genres[this.state.listItemSelected - 1]._id
-    );
-    let pageNumber = this.state.pageNumber;
-    if (pageNumber > 1 && this.state.movies.length === 1) {
-      pageNumber--;
-    }
-    const movies = deepCopy(
-      getMoviesPerPage(
-        this.state.moviePerPage,
-        pageNumber,
-        this.state.genres[this.state.listItemSelected - 1]._id
-      )
-    );
-    let filterArray = this.updateFilterArray(totalNumberOfMovies);
-    const allFilterValue = filterArray[filterArray.length - 1];
-    let moviePerPage = this.state.moviePerPage;
-    if (moviePerPage === allFilterValue + 1) {
-      moviePerPage = allFilterValue;
-    }
-    this.setState({
-      pageNumber,
-      movies,
-      filterArray,
-      allFilterValue,
-      moviePerPage
-    });
-  };
-
-  handleLike = id => {
-    handleMovieLike(id);
-    const movies = JSON.parse(JSON.stringify(this.state.movies));
-    movies.forEach(movie => {
-      if (movie._id === id) {
-        movie.isLiked = !movie.isLiked;
-      }
-    });
-    this.setState({ movies });
-  };
-
-  renderMovieList(movies) {
-    return movies.map(movie => (
-      <tr key={movie._id}>
-        <td>{movie.title}</td>
-        <td>{movie.genre.name}</td>
-        <td>{movie.numberInStock}</td>
-        <td>{movie.dailyRentalRate}</td>
-        <td>
-          <Like
-            switchLike={this.handleLike}
-            id={movie._id}
-            isLiked={movie.isLiked}
-          />
-        </td>
-        <td>
-          <button
-            className="btn btn-danger btn-md"
-            onClick={() => this.handleDelete(movie._id)}
-          >
-            Delete
-          </button>
-        </td>
-      </tr>
-    ));
-  }
 
   updateFilterArray(totalNumberOfMovies) {
     let filterArray = [];
