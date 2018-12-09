@@ -2,8 +2,7 @@ import React, { Component } from "react";
 import {
   getMoviesPerPage,
   deleteMovie,
-  handleMovieLike,
-  getNumberOfMovies
+  handleMovieLike
 } from "../services/fakeMovieService";
 import { getGenres } from "../services/fakeGenreService";
 import Like from "./like";
@@ -16,12 +15,38 @@ import ListGroup from "./listGroup";
 class Movies extends Component {
   state = {
     pageNumber: 1,
-    moviePerPage: 4,
-    movies: [],
-    allFilterValue: 0,
-    filterArray: [],
+    moviesInfo: { movies: [], totalNumberOfMovies: 0 },
+    filterArray: [
+      {
+        _id: 1,
+        filterValue: 2,
+        filterActive: false,
+        filterPossible: true,
+        defaultValue: false
+      },
+      {
+        _id: 2,
+        filterValue: 4,
+        filterActive: true,
+        filterPossible: true,
+        defaultValue: true
+      },
+      {
+        _id: 3,
+        filterValue: 8,
+        filterActive: false,
+        filterPossible: true,
+        defaultValue: false
+      },
+      {
+        _id: 4,
+        filterValue: "All Movies",
+        filterActive: false,
+        filterPossible: true,
+        defaultValue: false
+      }
+    ],
     genres: [],
-    listItemSelected: 1,
     sortingProps: [],
     headerList: ["Title", "Genre", "Stock", "Rate", "", ""],
     bodyPropsName: [
@@ -35,36 +60,15 @@ class Movies extends Component {
   };
 
   componentDidMount() {
-    const moviePerPage = 4;
-    const pageNumber = 1;
-    const listItemSelected = 1;
-    const genres = deepCopy([{ _id: 0, name: "All Movies" }, ...getGenres()]);
-    const movies = deepCopy(
-      getMoviesPerPage(
-        moviePerPage,
-        pageNumber,
-        genres[listItemSelected - 1]._id
-      )
-    );
-    const preFilterArray = [2, 4, 8];
-    let filterArray = [];
-    const totalNumberOfMovies = getNumberOfMovies(0);
-    preFilterArray.forEach(value => {
-      if (value < totalNumberOfMovies) {
-        filterArray.push(value);
-      }
-    });
-    filterArray.push(totalNumberOfMovies);
-    const allFilterValue = filterArray[filterArray.length - 1];
+    const genres = deepCopy(getGenres());
+    const moviesInfo = this.getUpdatedMovies(null, null, genres);
+    let filterArray = this.updateFilterArray(moviesInfo.numberOfMovies);
     this.setState({
-      movies,
-      allFilterValue,
+      moviesInfo,
       filterArray,
       genres
     });
   }
-
-  componentDidUpdate(prevProps, prevState) {}
 
   render() {
     return (
@@ -88,22 +92,27 @@ class Movies extends Component {
     return (
       <ListGroup
         listItems={this.state.genres}
-        listItemSelected={this.state.listItemSelected}
         idProp={"_id"}
         nameProp={"name"}
+        activeProp={"active"}
         onListClick={this.handleListClick}
       />
     );
   }
 
   renderPagenation() {
+    let activeFilter = this.state.filterArray.filter(
+      filter => filter.filterActive
+    )[0];
+
+    if (activeFilter.filterValue === "All Movies") {
+      return "";
+    }
+
     const numberOfPages = Math.ceil(
-      this.state.allFilterValue / this.state.moviePerPage
+      this.state.moviesInfo.totalNumberOfMovies / activeFilter.filterValue
     );
-    return this.state.movies.length === 0 ||
-      this.state.movies.length === this.state.allFilterValue ? (
-      ""
-    ) : (
+    return (
       <Pagenation
         numberOfPages={numberOfPages}
         pageClick={this.handlePageClick}
@@ -113,8 +122,12 @@ class Movies extends Component {
   }
 
   renderTable() {
-    const bodyPropsName = deepCopy(this.state.bodyPropsName);
-    const headerList = this.state.headerList
+    if (this.state.moviesInfo.movies.length === 0) {
+      return <h1>No movies in the basket</h1>;
+    }
+
+    const bodyPropsName = this.state.bodyPropsName;
+    let headerList = this.state.headerList
       .filter(header => header !== "")
       .map((header, index) => {
         return (
@@ -123,8 +136,12 @@ class Movies extends Component {
           </React.Fragment>
         );
       });
+    headerList = [
+      ...headerList,
+      ...this.state.headerList.filter(header => header === "")
+    ];
 
-    let bodyContent = deepCopy(this.state.movies);
+    let bodyContent = deepCopy(this.state.moviesInfo.movies);
     bodyContent.forEach(content => {
       content.like = (
         <Like
@@ -144,21 +161,27 @@ class Movies extends Component {
       content.genre = content.genre.name;
     });
 
-    return this.state.movies.length === 0 ? (
-      <h1>No movies in the basket</h1>
-    ) : (
+    return (
       <React.Fragment>
         <div className="moviePageHeader">
           <h1 style={{ float: "left" }}>
-            There are {this.state.movies.length} movies in the basket
+            There are {bodyContent.length} movies in the basket
           </h1>
           <SelectSingle
             labelName={"Movies Per Page"}
             uniqueID={"MoviePerPage"}
             onChangeSelect={this.handleOnChangeSelect}
-            optionList={this.renderOptionList()}
-            valueList={this.state.filterArray}
-            moviePerPage={this.state.moviePerPage}
+            optionList={this.state.filterArray
+              .filter(filter => filter.filterPossible)
+              .map(filter => filter.filterValue)}
+            valueList={this.state.filterArray
+              .filter(filter => filter.filterPossible)
+              .map(filter => filter._id)}
+            selectedValue={
+              this.state.filterArray.filter(
+                filter => filter.filterActive === true
+              )[0]._id
+            }
           />
           <Table
             tableClasses={"table customTable"}
@@ -184,9 +207,7 @@ class Movies extends Component {
     ];
     let sortPos = 0;
     this.state.sortingProps.forEach((sortingProp, index) => {
-      if (sortingProp.SortColumn === headerName) {
-        sortPos = index + 1;
-      }
+      sortPos = sortingProp.SortColumn === headerName ? index + 1 : sortPos;
     });
     arrowSymbol.push(
       <span
@@ -203,174 +224,184 @@ class Movies extends Component {
   renderHeaderClass(headerName) {
     let sortOrder = "none";
     this.state.sortingProps.forEach(sortingProp => {
-      if (sortingProp.SortColumn === headerName) {
-        sortOrder = sortingProp.SortOrder;
-      }
+      sortOrder =
+        sortingProp.SortColumn === headerName
+          ? sortingProp.SortOrder
+          : sortOrder;
     });
+
     if (sortOrder === "asc") {
       return "fa fa-sort-asc";
     } else if (sortOrder === "desc") {
       return "fa fa-sort-desc";
-    } else {
-      return "fa fa-sort";
     }
-  }
-
-  renderOptionList() {
-    const filterArray = deepCopy(this.state.filterArray);
-    const lastIndex = filterArray.length - 1;
-    return filterArray.map((filter, index) => {
-      if (index === lastIndex) {
-        filter = "All Movies";
-      }
-      return filter;
-    });
+    return "fa fa-sort";
   }
 
   handlePageClick = pageNumber => {
     this.setState({
       pageNumber,
-      movies: JSON.parse(
-        JSON.stringify(
-          getMoviesPerPage(
-            this.state.moviePerPage,
-            pageNumber,
-            this.state.genres[this.state.listItemSelected - 1]._id
-          )
-        )
-      )
+      moviesInfo: this.getUpdatedMovies(pageNumber)
     });
   };
 
   handleDelete = id => {
     deleteMovie(id);
-    const totalNumberOfMovies = getNumberOfMovies(
-      this.state.genres[this.state.listItemSelected - 1]._id
-    );
+
     let pageNumber = this.state.pageNumber;
-    if (pageNumber > 1 && this.state.movies.length === 1) {
+    if (pageNumber > 1 && this.state.moviesInfo.movies.length === 1) {
       pageNumber--;
     }
-    const movies = deepCopy(
-      getMoviesPerPage(
-        this.state.moviePerPage,
-        pageNumber,
-        this.state.genres[this.state.listItemSelected - 1]._id
-      )
-    );
-    let filterArray = this.updateFilterArray(totalNumberOfMovies);
-    const allFilterValue = filterArray[filterArray.length - 1];
-    let moviePerPage = this.state.moviePerPage;
-    if (moviePerPage === allFilterValue + 1) {
-      moviePerPage = allFilterValue;
-    }
+    const moviesInfo = this.getUpdatedMovies(pageNumber);
+
     this.setState({
       pageNumber,
-      movies,
-      filterArray,
-      allFilterValue,
-      moviePerPage
+      moviesInfo,
+      filterArray: this.updateFilterArray(moviesInfo.totalNumberOfMovies)
     });
   };
 
   handleLike = id => {
     handleMovieLike(id);
-    const movies = JSON.parse(JSON.stringify(this.state.movies));
-    movies.forEach(movie => {
+
+    let moviesInfo = deepCopy(this.state.moviesInfo);
+    moviesInfo.movies.forEach(movie => {
       if (movie._id === id) {
         movie.isLiked = !movie.isLiked;
       }
     });
-    this.setState({ movies });
+
+    this.setState({ moviesInfo });
   };
 
   handleSort = SortColumn => {
     let sortingProps = deepCopy(this.state.sortingProps);
     let columnnFound = false;
+
     sortingProps = sortingProps.map(sortingProp => {
       if (sortingProp.SortColumn === SortColumn) {
         columnnFound = true;
         if (sortingProp.SortOrder === "asc") {
           sortingProp.SortOrder = "desc";
           return sortingProp;
-        } else {
-          return { SortColumn: "RemoveMe" };
         }
-      } else {
-        return sortingProp;
+        return { SortColumn: "RemoveMe" };
       }
+      return sortingProp;
     });
+
     if (!columnnFound) {
       sortingProps.push({ SortColumn, SortOrder: "asc" });
     }
+
     sortingProps = sortingProps.filter(
       sortingProp => sortingProp.SortColumn !== "RemoveMe"
     );
+
     this.setState({ sortingProps });
   };
 
   handleOnChangeSelect = event => {
-    const moviePerPage = parseInt(event.target.value);
-    let movies = deepCopy(
-      getMoviesPerPage(
-        moviePerPage,
-        1,
-        this.state.genres[this.state.listItemSelected - 1]._id
-      )
-    );
-    this.setState({ movies, moviePerPage, pageNumber: 1 });
+    const selectedValue = parseInt(event.target.value);
+    let filterArray = deepCopy(this.state.filterArray);
+    const pageNumber = 1;
+
+    filterArray.forEach(filter => {
+      filter.filterActive = filter._id !== selectedValue ? false : true;
+    });
+
+    this.setState({
+      pageNumber,
+      moviesInfo: this.getUpdatedMovies(pageNumber, filterArray),
+      filterArray
+    });
   };
 
   handleListClick = id => {
-    let movies;
-    let { moviePerPage, genres } = this.state;
+    let genres = deepCopy(this.state.genres);
     const pageNumber = 1;
-    let listItemSelected;
-    genres.forEach((genre, index) => {
-      if (genre._id === id) {
-        listItemSelected = index + 1;
-      }
+
+    genres.forEach(genre => {
+      genre.active = genre._id === id ? true : false;
     });
-    const totalNumberOfMovies = getNumberOfMovies(
-      this.state.genres[listItemSelected - 1]._id
+
+    let checkFilterArray = deepCopy(this.state.filterArray);
+    let defaultFilter = checkFilterArray.filter(filter => filter.defaultValue);
+    let allFilter = checkFilterArray.filter(
+      filter => filter.filterValue === "All Movies"
     );
-    let filterArray = this.updateFilterArray(totalNumberOfMovies);
-    const allFilterValue = filterArray[filterArray.length - 1];
-    if (moviePerPage >= allFilterValue) {
-      moviePerPage = allFilterValue;
-    } else {
-      const filterValid = filterArray.indexOf(moviePerPage);
-      if (filterValid !== -1) {
-        moviePerPage = filterArray[filterValid];
-      } else {
-        if (totalNumberOfMovies >= 4) {
-          moviePerPage = 4;
-        } else {
-          moviePerPage = 2;
-        }
-      }
+    if (allFilter[0].filterActive && defaultFilter.length > 0) {
+      allFilter[0].filterActive = false;
+      defaultFilter[0].filterActive = true;
     }
-    movies = deepCopy(getMoviesPerPage(moviePerPage, pageNumber, id));
-    this.setState({
-      movies,
-      listItemSelected,
+    const moviesInfo = this.getUpdatedMovies(
       pageNumber,
-      moviePerPage,
-      filterArray,
-      allFilterValue
+      checkFilterArray,
+      genres
+    );
+
+    this.setState({
+      moviesInfo,
+      pageNumber,
+      filterArray: this.updateFilterArray(moviesInfo.totalNumberOfMovies),
+      genres
     });
   };
 
   updateFilterArray(totalNumberOfMovies) {
-    let filterArray = [];
-    let preFilterArray = [2, 4, 8];
-    preFilterArray.forEach(value => {
-      if (value < totalNumberOfMovies) {
-        filterArray.push(value);
+    let filterArray = deepCopy(this.state.filterArray);
+    let soloFilterActive = false;
+
+    filterArray
+      .filter(filter => filter.filterValue !== "All Movies")
+      .forEach(filter => {
+        if (filter.filterValue >= totalNumberOfMovies) {
+          filter.filterPossible = false;
+          filter.filterActive = false;
+        } else {
+          filter.filterPossible = true;
+        }
+        soloFilterActive = filter.filterActive ? true : soloFilterActive;
+      });
+
+    if (!soloFilterActive) {
+      let defaultFilter = filterArray.filter(
+        filter => filter.defaultValue && filter.filterPossible
+      );
+      let allFilter = filterArray.filter(
+        filter => filter.filterValue === "All Movies"
+      );
+      if (defaultFilter.length !== 0) {
+        defaultFilter[0].filterActive = true;
+        allFilter[0].filterActive = false;
+      } else {
+        allFilter[0].filterActive = true;
       }
-    });
-    filterArray.push(totalNumberOfMovies);
+    }
+
     return filterArray;
+  }
+
+  getUpdatedMovies(pageNumber, filterArray, genres) {
+    if (!pageNumber) {
+      pageNumber = this.state.pageNumber;
+    }
+
+    if (!filterArray) {
+      filterArray = this.state.filterArray;
+    }
+
+    if (!genres) {
+      genres = this.state.genres;
+    }
+
+    return deepCopy(
+      getMoviesPerPage(
+        filterArray.filter(filter => filter.filterActive)[0].filterValue,
+        pageNumber,
+        genres.filter(genre => genre.active === true)[0]._id
+      )
+    );
   }
 }
 

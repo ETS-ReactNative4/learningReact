@@ -3,22 +3,18 @@ import ListGroupItem from "./listGroupItem";
 import Prototypes from "prop-types";
 
 const ListGroup = props => {
-  const { onListClick, listItems, listItemSelected, idProp, nameProp } = props;
+  const { onListClick, listItems, idProp, nameProp, activeProp } = props;
   return <ul className="list-group">{renderListGroupItem()}</ul>;
 
   function renderListGroupItem() {
-    return listItems.map((item, index) => {
-      let isSelected = false;
-      if (index + 1 === listItemSelected) {
-        isSelected = true;
-      }
+    return listItems.map(item => {
       return (
         <ListGroupItem
           onListClick={onListClick}
           key={item[idProp]}
           id={item[idProp]}
           textValue={item[nameProp]}
-          isSelected={isSelected}
+          isSelected={item[activeProp]}
         />
       );
     });

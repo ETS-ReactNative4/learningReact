@@ -8,7 +8,7 @@ class SelectSingle extends Component {
       onChangeSelect,
       uniqueID,
       optionList,
-      moviePerPage,
+      selectedValue,
       valueList
     } = this.props;
     return (
@@ -22,7 +22,7 @@ class SelectSingle extends Component {
           className="custom-select"
           id={uniqueID}
           onChange={onChangeSelect}
-          value={moviePerPage}
+          value={selectedValue}
         >
           {this.renderOptions(optionList, valueList)}
         </select>

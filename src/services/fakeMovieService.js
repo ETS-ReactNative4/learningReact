@@ -118,19 +118,22 @@ export function getNumberOfPages(moviePerPage) {
   return Math.ceil(movies.length / moviePerPage);
 }
 
-export function getMoviesPerPage(moviePerPage, pageNumber, filterID) {
-  filterID = filterID || 0;
-  let genreMovies;
-  if (filterID === 0) {
-    genreMovies = movies;
-  } else {
-    genreMovies = movies.filter(movie => movie.genre._id === filterID);
+export function getMoviesPerPage(moviePerPage, pageNumber, genreID) {
+  const genreMovies =
+    genreID === "0"
+      ? movies
+      : movies.filter(movie => movie.genre._id === genreID);
+  if (moviePerPage === "All Movies") {
+    return { movies: genreMovies, totalNumberOfMovies: genreMovies.length };
   }
   const startPosition = moviePerPage * (pageNumber - 1);
-  return _(genreMovies)
-    .slice(startPosition)
-    .take(moviePerPage)
-    .value();
+  return {
+    movies: _(genreMovies)
+      .slice(startPosition)
+      .take(moviePerPage)
+      .value(),
+    totalNumberOfMovies: genreMovies.length
+  };
 }
 
 export function handleMovieLike(id) {
