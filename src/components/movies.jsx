@@ -80,7 +80,10 @@ class Movies extends Component {
         <div id="genreTab" style={{ width: "15%" }}>
           {this.renderGenreTab()}
         </div>
-        <div id="movieTab" style={{ width: "80%", marginLeft: "2%" }}>
+        <div id="hiddenButton">
+          <button className="btn btn-primary genreShowBtn">Genre</button>
+        </div>
+        <div id="movieTab">
           {this.renderTable()}
           {this.renderPagenation()}
         </div>
@@ -152,7 +155,7 @@ class Movies extends Component {
       );
       content.delete = (
         <button
-          className="btn btn-danger btn-md"
+          className="btn btn-danger myButton"
           onClick={() => this.handleDelete(content._id)}
         >
           Delete
