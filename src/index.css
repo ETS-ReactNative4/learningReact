@@ -21,6 +21,9 @@ h1 {
   .genreShowBtn {
     display: none !important;
   }
+  #genreTab {
+    width: 15%;
+  }
 }
 
 @media screen and (min-width: 1200px) and (max-width: 1499px) {
@@ -33,6 +36,9 @@ h1 {
   #movieTab {
     width: 80%;
     margin-left: 2%;
+  }
+  #genreTab {
+    width: 15%;
   }
 }
 
@@ -47,6 +53,9 @@ h1 {
     width: 80%;
     margin-left: 2%;
   }
+  #genreTab {
+    width: 15%;
+  }
 }
 
 @media screen and (max-width: 799px) {
@@ -55,6 +64,10 @@ h1 {
   }
   #genreTab {
     display: none;
+    width: 40%;
+    position: fixed;
+    left: 0;
+    z-index: 6000;
   }
   h1 {
     font-size: 1.5rem !important;

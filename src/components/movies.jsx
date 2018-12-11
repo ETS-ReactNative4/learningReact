@@ -77,9 +77,7 @@ class Movies extends Component {
         style={{ display: "flex", paddingLeft: "0" }}
         id="mainTab"
       >
-        <div id="genreTab" style={{ width: "15%" }}>
-          {this.renderGenreTab()}
-        </div>
+        <div id="genreTab">{this.renderGenreTab()}</div>
         <div id="hiddenButton">
           <button className="btn btn-primary genreShowBtn">Genre</button>
         </div>
