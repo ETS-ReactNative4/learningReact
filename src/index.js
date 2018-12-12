@@ -20,7 +20,8 @@ $(function() {
   document.addEventListener("click", evt => {
     if (
       !$(evt.target).hasClass("list-group-item") &&
-      !$(evt.target).hasClass("genreShowBtn")
+      !$(evt.target).hasClass("genreShowBtn") &&
+      window.innerWidth <= 799
     ) {
       clearTimeout(genreTabAutoHide);
       $("#genreTab").hide();
