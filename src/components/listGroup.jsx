@@ -1,9 +1,14 @@
 import React from "react";
+import PropTypes from "prop-types";
 import ListGroupItem from "./listGroupItem";
-import Prototypes from "prop-types";
 
-const ListGroup = props => {
-  const { onListClick, listItems, idProp, nameProp, activeProp } = props;
+const ListGroup = ({
+  onListClick,
+  listItems,
+  idProp,
+  nameProp,
+  activeProp
+}) => {
   return <ul className="list-group">{renderListGroupItem()}</ul>;
 
   function renderListGroupItem() {
@@ -21,10 +26,12 @@ const ListGroup = props => {
   }
 };
 
-ListGroup.prototype = {
-  onListClick: Prototypes.func.isRequired,
-  listItems: Prototypes.array.isRequired,
-  listItemSelected: Prototypes.number.isRequired
+ListGroup.propTypes = {
+  onListClick: PropTypes.func.isRequired,
+  listItems: PropTypes.array.isRequired,
+  idProp: PropTypes.string.isRequired,
+  nameProp: PropTypes.string.isRequired,
+  activeProp: PropTypes.string.isRequired
 };
 
 export default ListGroup;

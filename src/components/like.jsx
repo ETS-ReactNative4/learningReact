@@ -1,21 +1,25 @@
-import React, { Component } from "react";
+import React from "react";
+import PropTypes from "prop-types";
 
-class Like extends Component {
-  render() {
-    const { isLiked, switchLike, id } = this.props;
-    return (
-      <i
-        onClick={() => switchLike(id)}
-        className={this.renderLikeIcon(isLiked)}
-        style={{ cursor: "pointer" }}
-        aria-hidden="true"
-      />
-    );
-  }
+const Like = ({ isLiked, switchLike, id }) => {
+  return (
+    <i
+      onClick={() => switchLike(id)}
+      className={renderLikeIcon(isLiked)}
+      style={{ cursor: "pointer" }}
+      aria-hidden="true"
+    />
+  );
 
-  renderLikeIcon(isLiked) {
+  function renderLikeIcon() {
     return isLiked === true ? "fa fa-heart" : "fa fa-heart-o";
   }
-}
+};
+
+Like.propTypes = {
+  isLiked: PropTypes.bool.isRequired,
+  switchLike: PropTypes.func.isRequired,
+  id: PropTypes.string.isRequired
+};
 
 export default Like;
