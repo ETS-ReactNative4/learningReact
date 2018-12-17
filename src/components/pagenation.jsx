@@ -1,19 +1,16 @@
-import React, { Component } from "react";
+import React from "react";
 import Page from "./page";
 
-class Pagenation extends Component {
-  render() {
-    const { numberOfPages, pageClick, pageNumber } = this.props;
-    return (
-      <nav aria-label="Page navigation">
-        <ul className="pagination justify-content-end">
-          {this.renderPages(numberOfPages, pageClick, pageNumber)}
-        </ul>
-      </nav>
-    );
-  }
+const Pagenation = ({ numberOfPages, pageClick, pageNumber }) => {
+  return (
+    <nav aria-label="Page navigation">
+      <ul className="pagination justify-content-end">
+        {renderPages(numberOfPages, pageClick, pageNumber)}
+      </ul>
+    </nav>
+  );
 
-  renderPages(numberOfPages, pageClick, pageNumber) {
+  function renderPages(numberOfPages, pageClick, pageNumber) {
     let pages = [];
     for (let i = 0; i < numberOfPages; i++) {
       let isSelected = false;
@@ -32,6 +29,6 @@ class Pagenation extends Component {
     }
     return pages;
   }
-}
+};
 
 export default Pagenation;

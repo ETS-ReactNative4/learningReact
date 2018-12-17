@@ -9,8 +9,9 @@ import Like from "./like";
 import Pagenation from "./pagenation";
 import SelectSingle from "./selectSingle";
 import { deepCopy } from "../utilities/common";
-import Table from "../utilities/table";
+import Table from "./table";
 import ListGroup from "./listGroup";
+import GenericNavbar from "./genericNavbar";
 
 class Movies extends Component {
   state = {
@@ -72,20 +73,28 @@ class Movies extends Component {
 
   render() {
     return (
-      <div
-        className="container-fluid"
-        style={{ display: "flex", paddingLeft: "0" }}
-        id="mainTab"
-      >
-        <div id="genreTab">{this.renderGenreTab()}</div>
-        <div id="hiddenButton">
-          <button className="btn btn-primary genreShowBtn">Genre</button>
+      <React.Fragment>
+        <div id="navbarTry">
+          <GenericNavbar
+            NavbarHeading={<i className="fa fa-home" aria-hidden="true" />}
+            NavbarItems={this.state.headerList}
+          />
         </div>
-        <div id="movieTab">
-          {this.renderTable()}
-          {this.renderPagenation()}
+        <div
+          className="container-fluid"
+          style={{ display: "flex", paddingLeft: "0" }}
+          id="mainTab"
+        >
+          <div id="genreTab">{this.renderGenreTab()}</div>
+          <div id="hiddenButton">
+            <button className="btn btn-primary genreShowBtn">Genre</button>
+          </div>
+          <div id="movieTab">
+            {this.renderTable()}
+            {this.renderPagenation()}
+          </div>
         </div>
-      </div>
+      </React.Fragment>
     );
   }
 
