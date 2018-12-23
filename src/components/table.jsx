@@ -7,9 +7,11 @@ const Table = props => {
     headerList,
     bodyContent,
     bodyPropsName,
-    sortingProps
+    sortingProps,
+    handleDetail
   } = props;
   const sortedBodyContent = sortTable();
+
   return (
     <table className={tableClasses}>
       <thead>
@@ -22,11 +24,21 @@ const Table = props => {
       <tbody>
         {sortedBodyContent.map((content, index) => (
           <tr key={"row-" + (index + 1)}>
-            {bodyPropsName.map((propName, indexProp) => (
-              <td key={"row-" + (index + 1) + "-col-" + indexProp}>
-                {content[propName]}
-              </td>
-            ))}
+            {bodyPropsName.map((propName, indexProp) => {
+              return indexProp === 0 ? (
+                <td
+                  onClick={() => handleDetail(content[propName])}
+                  key={"row-" + (index + 1) + "-col-" + indexProp}
+                  style={{ cursor: "pointer" }}
+                >
+                  {content[propName]}
+                </td>
+              ) : (
+                <td key={"row-" + (index + 1) + "-col-" + indexProp}>
+                  {content[propName]}
+                </td>
+              );
+            })}
           </tr>
         ))}
       </tbody>

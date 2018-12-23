@@ -11,7 +11,6 @@ import SelectSingle from "./selectSingle";
 import { deepCopy } from "../utilities/common";
 import Table from "./table";
 import ListGroup from "./listGroup";
-import GenericNavbar from "./genericNavbar";
 
 class Movies extends Component {
   state = {
@@ -60,10 +59,14 @@ class Movies extends Component {
     ]
   };
 
+  // componentDidUpdate(prevProps, prevState) {
+  //   console.log(prevState);
+  // }
+
   componentDidMount() {
     const genres = deepCopy(getGenres());
     const moviesInfo = this.getUpdatedMovies(null, null, genres);
-    let filterArray = this.updateFilterArray(moviesInfo.numberOfMovies);
+    const filterArray = this.updateFilterArray(moviesInfo.numberOfMovies);
     this.setState({
       moviesInfo,
       filterArray,
@@ -74,12 +77,6 @@ class Movies extends Component {
   render() {
     return (
       <React.Fragment>
-        <div id="navbarTry">
-          <GenericNavbar
-            NavbarHeading={<i className="fa fa-home" aria-hidden="true" />}
-            NavbarItems={this.state.headerList}
-          />
-        </div>
         <div
           className="container-fluid"
           style={{ display: "flex", paddingLeft: "0" }}
@@ -199,11 +196,19 @@ class Movies extends Component {
             bodyContent={bodyContent}
             bodyPropsName={bodyPropsName}
             sortingProps={this.state.sortingProps}
+            handleDetail={this.handleMovieDetail}
           />
         </div>
       </React.Fragment>
     );
   }
+
+  handleMovieDetail = movieName => {
+    this.props.updateMovieDetail(
+      this.state.moviesInfo.movies.filter(movie => movie.title === movieName)[0]
+    );
+    this.props.history.push("/movies/movie-details/" + movieName);
+  };
 
   renderSortDiv(headerName) {
     let arrowSymbol = [
@@ -274,7 +279,7 @@ class Movies extends Component {
   handleLike = id => {
     handleMovieLike(id);
 
-    let moviesInfo = deepCopy(this.state.moviesInfo);
+    const moviesInfo = deepCopy(this.state.moviesInfo);
     moviesInfo.movies.forEach(movie => {
       if (movie._id === id) {
         movie.isLiked = !movie.isLiked;

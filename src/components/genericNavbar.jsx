@@ -1,12 +1,12 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 
-const GenericNavbar = ({ NavbarHeading, NavbarItems }) => {
+const GenericNavbar = ({ NavbarHeading, NavbarItems, NavbarLocations }) => {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-      <a className="navbar-brand" href="#">
+      <NavLink to="/" style={{ color: "white", paddingRight: "15px" }}>
         {NavbarHeading}
-      </a>
+      </NavLink>
       <button
         className="navbar-toggler"
         type="button"
@@ -27,7 +27,11 @@ const GenericNavbar = ({ NavbarHeading, NavbarItems }) => {
 
   function renderNavbarItems() {
     return NavbarItems.map((navbarItem, index) => (
-      <NavLink className="nav-item nav-link" key={index} to="#">
+      <NavLink
+        to={NavbarLocations[index]}
+        className="nav-item nav-link"
+        key={index}
+      >
         {navbarItem}
       </NavLink>
     ));

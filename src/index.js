@@ -6,12 +6,12 @@ import * as serviceWorker from "./serviceWorker";
 import "bootstrap/dist/css/bootstrap.css";
 import "font-awesome/css/font-awesome.css";
 import "bootstrap/dist/js/bootstrap.js";
-import Movies from "./components/movies";
 import mobileCompat from "./utilities/mobileCompatibility";
+import Home from "./components/home";
 
 ReactDOM.render(
   <BrowserRouter>
-    <Movies />
+    <Home />
   </BrowserRouter>,
   document.getElementById("root")
 );
