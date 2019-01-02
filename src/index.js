@@ -6,8 +6,10 @@ import * as serviceWorker from "./serviceWorker";
 import "bootstrap/dist/css/bootstrap.css";
 import "font-awesome/css/font-awesome.css";
 import "bootstrap/dist/js/bootstrap.js";
-import mobileCompat from "./utilities/mobileCompatibility";
 import Home from "./components/home";
+import loggerService from "./services/loggerService";
+
+loggerService.init();
 
 ReactDOM.render(
   <BrowserRouter>
@@ -17,5 +19,3 @@ ReactDOM.render(
 );
 
 serviceWorker.unregister();
-
-mobileCompat();

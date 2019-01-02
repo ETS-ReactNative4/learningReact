@@ -1,21 +1,18 @@
 import React, { Component } from "react";
 import GenericNavbar from "./genericNavbar";
-import { Switch, Route } from "react-router-dom";
+import { Switch, Route, Redirect } from "react-router-dom";
 import Movies from "./movies";
 import App from "./../App";
-import MovieInfo from "./movieInfo";
 import LoginForm from "./loginForm";
+import MovieForm from "./movieForm";
+import Welcome from "./welcome";
+import NotFound from "./notFound";
 
 class Home extends Component {
   state = {
     navHeader: ["Cart", "Movies", "Login"],
     navLocation: ["/cart", "/movies", "/login"],
-    movie: {
-      title: "no movies selected",
-      numberInStock: "none",
-      dailyRentalRate: "none",
-      genre: { name: "none" }
-    }
+    movie: null
   };
   render() {
     return (
@@ -26,18 +23,28 @@ class Home extends Component {
           NavbarLocations={this.state.navLocation}
         />
         <Switch>
+          <Route path="/not-found" exact component={NotFound} />
+          <Route
+            path="/movies/add-movie"
+            exact
+            render={props => <MovieForm {...props} />}
+          />
           <Route
             path="/movies/movie-details/:movieName"
-            render={props => <MovieInfo movie={this.state.movie} {...props} />}
+            exact
+            render={props => <MovieForm movie={this.state.movie} {...props} />}
           />
           <Route
             path="/movies"
+            exact
             render={props => (
               <Movies updateMovieDetail={this.updateMovieDetail} {...props} />
             )}
           />
-          <Route path="/cart" component={App} />
-          <Route path="/login" component={LoginForm} />
+          <Route path="/cart" exact component={App} />
+          <Route path="/login" exact component={LoginForm} />
+          <Route path="/" exact component={Welcome} />
+          <Redirect to="/not-found" />
         </Switch>
       </React.Fragment>
     );

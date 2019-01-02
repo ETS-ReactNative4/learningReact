@@ -1,16 +1,19 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
 import {
   getMoviesPerPage,
   deleteMovie,
   handleMovieLike
 } from "../services/fakeMovieService";
-import { getGenres } from "../services/fakeGenreService";
 import Like from "./like";
 import Pagenation from "./pagenation";
 import SelectSingle from "./selectSingle";
 import { deepCopy } from "../utilities/common";
 import Table from "./table";
 import ListGroup from "./listGroup";
+import mobileCompat from "../utilities/mobileCompatibility";
+import Input from "./input";
+import genreService from "../services/genreService";
 
 class Movies extends Component {
   state = {
@@ -56,15 +59,12 @@ class Movies extends Component {
       "dailyRentalRate",
       "like",
       "delete"
-    ]
+    ],
+    searchText: ""
   };
 
-  // componentDidUpdate(prevProps, prevState) {
-  //   console.log(prevState);
-  // }
-
-  componentDidMount() {
-    const genres = deepCopy(getGenres());
+  async componentDidMount() {
+    const genres = await genreService.getGenres();
     const moviesInfo = this.getUpdatedMovies(null, null, genres);
     const filterArray = this.updateFilterArray(moviesInfo.numberOfMovies);
     this.setState({
@@ -72,6 +72,7 @@ class Movies extends Component {
       filterArray,
       genres
     });
+    mobileCompat();
   }
 
   render() {
@@ -87,6 +88,23 @@ class Movies extends Component {
             <button className="btn btn-primary genreShowBtn">Genre</button>
           </div>
           <div id="movieTab">
+            <Link
+              to="/movies/add-movie"
+              className="btn btn-primary"
+              style={{ marginTop: "1%" }}
+            >
+              New Movie
+            </Link>
+            <div style={{ marginTop: "1%", marginBottom: "-1rem" }}>
+              <Input
+                type="search"
+                id="movie-search"
+                placeholder="Search Movie..."
+                onChange={this.handleOnChangeSearch}
+                style={{ paddingLeft: 5, width: "auto" }}
+                value={this.state.searchText}
+              />
+            </div>
             {this.renderTable()}
             {this.renderPagenation()}
           </div>
@@ -94,6 +112,11 @@ class Movies extends Component {
       </React.Fragment>
     );
   }
+
+  handleOnChangeSearch = e => {
+    const searchText = e.currentTarget.value;
+    this.setState({ searchText });
+  };
 
   renderGenreTab() {
     return (
@@ -148,7 +171,14 @@ class Movies extends Component {
       ...this.state.headerList.filter(header => header === "")
     ];
 
-    let bodyContent = deepCopy(this.state.moviesInfo.movies);
+    let bodyContent = deepCopy(
+      this.state.moviesInfo.movies.filter(
+        movie =>
+          movie.title
+            .toLowerCase()
+            .indexOf(this.state.searchText.toLowerCase()) > -1
+      )
+    );
     bodyContent.forEach(content => {
       content.like = (
         <Like
@@ -177,14 +207,14 @@ class Movies extends Component {
           <SelectSingle
             labelName={"Movies Per Page"}
             uniqueID={"MoviePerPage"}
-            onChangeSelect={this.handleOnChangeSelect}
+            onChange={this.handleOnChangeSelect}
             optionList={this.state.filterArray
               .filter(filter => filter.filterPossible)
               .map(filter => filter.filterValue)}
             valueList={this.state.filterArray
               .filter(filter => filter.filterPossible)
               .map(filter => filter._id)}
-            selectedValue={
+            value={
               this.state.filterArray.filter(
                 filter => filter.filterActive === true
               )[0]._id

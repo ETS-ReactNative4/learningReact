@@ -13,6 +13,14 @@ export default function mobileCompat() {
       $("#genreTab").hide();
       $("#movieTab").css("opacity", "1");
       $("#hiddenButton").show();
+    } else if (
+      $(evt.target).hasClass("list-group-item") &&
+      window.innerWidth <= 799
+    ) {
+      clearTimeout(genreTabAutoHide);
+      $("#genreTab").hide();
+      $("#movieTab").css("opacity", "1");
+      $("#hiddenButton").show();
     }
   });
 
@@ -26,15 +34,6 @@ export default function mobileCompat() {
       $("#movieTab").css("opacity", "1");
       $("#hiddenButton").show();
     }, 5000);
-  });
-
-  $(".list-group-item").click(function() {
-    if (window.innerWidth <= 799) {
-      clearTimeout(genreTabAutoHide);
-      $("#genreTab").hide();
-      $("#movieTab").css("opacity", "1");
-      $("#hiddenButton").show();
-    }
   });
 
   $(window).on("resize", function() {

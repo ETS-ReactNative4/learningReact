@@ -5,24 +5,36 @@ class SelectSingle extends Component {
   render() {
     const {
       labelName,
-      onChangeSelect,
+      onChange,
       uniqueID,
       optionList,
-      selectedValue,
-      valueList
+      value,
+      valueList,
+      handleOnFocus
     } = this.props;
-    return (
-      <div className="input-group mb-3">
+
+    const titleDiv =
+      labelName !== "" && labelName ? (
         <div className="input-group-prepend">
           <label className="input-group-text" htmlFor="inputGroupSelect01">
             {labelName}
           </label>
         </div>
+      ) : (
+        ""
+      );
+
+    return (
+      <div className="input-group mb-3">
+        {titleDiv}
         <select
           className="custom-select"
           id={uniqueID}
-          onChange={onChangeSelect}
-          value={selectedValue}
+          onChange={onChange}
+          value={value}
+          onFocus={() => {
+            handleOnFocus(uniqueID);
+          }}
         >
           {this.renderOptions(optionList, valueList)}
         </select>
@@ -38,5 +50,9 @@ class SelectSingle extends Component {
     });
   }
 }
+
+SelectSingle.defaultProps = {
+  handleOnFocus: () => {}
+};
 
 export default SelectSingle;

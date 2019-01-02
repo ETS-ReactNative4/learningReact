@@ -34,4 +34,14 @@ ListGroup.propTypes = {
   activeProp: PropTypes.string.isRequired
 };
 
+ListGroup.defaultProps = {
+  onListClick: () => {
+    alert("nothing added to list");
+  },
+  listItems: [{}],
+  idProp: "_id",
+  nameProp: "name",
+  activeProp: "active"
+};
+
 export default ListGroup;
