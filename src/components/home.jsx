@@ -7,11 +7,12 @@ import LoginForm from "./loginForm";
 import MovieForm from "./movieForm";
 import Welcome from "./welcome";
 import NotFound from "./notFound";
+import RegisterForm from "./registerForm";
 
 class Home extends Component {
   state = {
-    navHeader: ["Cart", "Movies", "Login"],
-    navLocation: ["/cart", "/movies", "/login"],
+    navHeader: ["Cart", "Movies", "Login", "Register"],
+    navLocation: ["/cart", "/movies", "/login", "/register"],
     movie: null
   };
   render() {
@@ -43,6 +44,7 @@ class Home extends Component {
           />
           <Route path="/cart" exact component={App} />
           <Route path="/login" exact component={LoginForm} />
+          <Route path="/register" exact component={RegisterForm} />
           <Route path="/" exact component={Welcome} />
           <Redirect to="/not-found" />
         </Switch>

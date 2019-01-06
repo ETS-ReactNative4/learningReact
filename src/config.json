@@ -1,3 +1,6 @@
 {
-  "apiGenreEndPoint": "http://localhost:3900/api/genres"
+  "apiGenreEndPoint": "http://localhost:3900/api/genres",
+  "apiMovieEndPoint": "http://localhost:3900/api/movies",
+  "apiUserEndPoint": "http://localhost:3900/api/users",
+  "apiAuthEndPoint": "http://localhost:3900/api/auth"
 }

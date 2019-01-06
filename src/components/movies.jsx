@@ -1,10 +1,6 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import {
-  getMoviesPerPage,
-  deleteMovie,
-  handleMovieLike
-} from "../services/fakeMovieService";
+import movieService from "../services/movieService";
 import Like from "./like";
 import Pagenation from "./pagenation";
 import SelectSingle from "./selectSingle";
@@ -14,6 +10,7 @@ import ListGroup from "./listGroup";
 import mobileCompat from "../utilities/mobileCompatibility";
 import Input from "./input";
 import genreService from "../services/genreService";
+import { ToastContainer, toast } from "react-toastify";
 
 class Movies extends Component {
   state = {
@@ -65,7 +62,7 @@ class Movies extends Component {
 
   async componentDidMount() {
     const genres = await genreService.getGenres();
-    const moviesInfo = this.getUpdatedMovies(null, null, genres);
+    const moviesInfo = await this.getUpdatedMovies(null, null, genres);
     const filterArray = this.updateFilterArray(moviesInfo.numberOfMovies);
     this.setState({
       moviesInfo,
@@ -78,6 +75,7 @@ class Movies extends Component {
   render() {
     return (
       <React.Fragment>
+        <ToastContainer />
         <div
           className="container-fluid"
           style={{ display: "flex", paddingLeft: "0" }}
@@ -283,32 +281,32 @@ class Movies extends Component {
     return "fa fa-sort";
   }
 
-  handlePageClick = pageNumber => {
+  handlePageClick = async pageNumber => {
     this.setState({
       pageNumber,
-      moviesInfo: this.getUpdatedMovies(pageNumber)
+      moviesInfo: await this.getUpdatedMovies(pageNumber)
     });
   };
 
-  handleDelete = id => {
-    deleteMovie(id);
+  handleDelete = async id => {
+    await movieService.deleteMovie(id);
 
     let pageNumber = this.state.pageNumber;
     if (pageNumber > 1 && this.state.moviesInfo.movies.length === 1) {
       pageNumber--;
     }
-    const moviesInfo = this.getUpdatedMovies(pageNumber);
+    const moviesInfo = await this.getUpdatedMovies(pageNumber);
 
     this.setState({
       pageNumber,
       moviesInfo,
       filterArray: this.updateFilterArray(moviesInfo.totalNumberOfMovies)
     });
+
+    toast.success("Movie deleted", { className: "customToast" });
   };
 
   handleLike = id => {
-    handleMovieLike(id);
-
     const moviesInfo = deepCopy(this.state.moviesInfo);
     moviesInfo.movies.forEach(movie => {
       if (movie._id === id) {
@@ -346,7 +344,7 @@ class Movies extends Component {
     this.setState({ sortingProps });
   };
 
-  handleOnChangeSelect = event => {
+  handleOnChangeSelect = async event => {
     const selectedValue = parseInt(event.target.value);
     let filterArray = deepCopy(this.state.filterArray);
     const pageNumber = 1;
@@ -357,12 +355,12 @@ class Movies extends Component {
 
     this.setState({
       pageNumber,
-      moviesInfo: this.getUpdatedMovies(pageNumber, filterArray),
+      moviesInfo: await this.getUpdatedMovies(pageNumber, filterArray),
       filterArray
     });
   };
 
-  handleListClick = id => {
+  handleListClick = async id => {
     let genres = deepCopy(this.state.genres);
     const pageNumber = 1;
 
@@ -379,7 +377,7 @@ class Movies extends Component {
       allFilter[0].filterActive = false;
       defaultFilter[0].filterActive = true;
     }
-    const moviesInfo = this.getUpdatedMovies(
+    const moviesInfo = await this.getUpdatedMovies(
       pageNumber,
       checkFilterArray,
       genres
@@ -427,7 +425,7 @@ class Movies extends Component {
     return filterArray;
   }
 
-  getUpdatedMovies(pageNumber, filterArray, genres) {
+  async getUpdatedMovies(pageNumber, filterArray, genres) {
     if (!pageNumber) {
       pageNumber = this.state.pageNumber;
     }
@@ -440,13 +438,13 @@ class Movies extends Component {
       genres = this.state.genres;
     }
 
-    return deepCopy(
-      getMoviesPerPage(
-        filterArray.filter(filter => filter.filterActive)[0].filterValue,
-        pageNumber,
-        genres.filter(genre => genre.active === true)[0]._id
-      )
+    const moviesInfo = await movieService.getMoviesPerPage(
+      filterArray.filter(filter => filter.filterActive)[0].filterValue,
+      pageNumber,
+      genres.filter(genre => genre.active === true)[0]._id
     );
+
+    return moviesInfo;
   }
 }
 

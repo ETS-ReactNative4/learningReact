@@ -144,3 +144,7 @@ code {
   -moz-transform: rotate(90deg);
   -o-transform: rotate(90deg);
 }
+
+.customToast {
+  min-height: 0px !important;
+}

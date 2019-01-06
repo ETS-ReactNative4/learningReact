@@ -9,10 +9,16 @@ const Input = ({
   errors,
   optionList,
   valueList,
+  showError,
   ...rest
 }) => {
+  const styleElement =
+    !showError && errors && errors !== ""
+      ? { boxShadow: "0 0 0 0.2rem #c55757" }
+      : {};
+
   const dangerElement =
-    errors !== "" && errors ? (
+    showError && errors && errors !== "" ? (
       <div className="alert alert-danger">{errors}</div>
     ) : (
       ""
@@ -36,6 +42,7 @@ const Input = ({
         className="form-control"
         type={type}
         onFocus={() => handleOnFocus(id)}
+        style={styleElement}
         {...rest}
       />
     );

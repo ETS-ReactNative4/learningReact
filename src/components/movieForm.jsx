@@ -1,8 +1,8 @@
 import React from "react";
 import Joi from "joi-browser";
 import Form from "./form";
-import { getGenres } from "./../services/fakeGenreService";
-import { saveMovie } from "./../services/fakeMovieService";
+import movieService from "../services/movieService";
+import genreService from "../services/genreService";
 
 class MovieForm extends Form {
   state = {
@@ -15,10 +15,11 @@ class MovieForm extends Form {
     valueList: []
   };
 
-  componentDidMount() {
+  async componentDidMount() {
     if (this.props.movie === null) this.props.history.push("/not-found");
 
-    const genres = getGenres().filter(genre => genre._id !== "0");
+    let genres = await genreService.getGenres();
+    genres = genres.filter(genre => genre._id !== "0");
     const optionList = genres.map(genre => genre.name);
     const valueList = genres.map(genre => genre._id);
     const data = { ...this.state.data };
@@ -81,19 +82,22 @@ class MovieForm extends Form {
     );
   }
 
-  doSubmit = () => {
+  doSubmit = async () => {
     const { data } = this.state;
-    const movieOld = this.props.movie || {};
+    const movieOldDetails = this.props.movie || {};
     const movie = {
-      _id: movieOld._id || null,
       title: data.title,
       genreId: data.genre,
       numberInStock: data.stock,
-      dailyRentalRate: data.rate,
-      isLiked: false
+      dailyRentalRate: data.rate
     };
 
-    saveMovie(movie);
+    if (movieOldDetails._id) {
+      movie._id = movieOldDetails._id;
+      await movieService.updateMovie(movie);
+    } else {
+      await movieService.saveMovie(movie);
+    }
 
     this.props.history.push("/movies");
   };

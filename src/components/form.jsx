@@ -70,8 +70,7 @@ class Form extends Component {
     type,
     autoFocusDefault,
     optionList = [],
-    valueList = [],
-    selectedValue = 0
+    valueList = []
   ) {
     const { data, errors, showError } = this.state;
     return (
@@ -81,11 +80,12 @@ class Form extends Component {
         onChange={this.handleChange}
         label={label}
         autoFocus={autoFocusDefault}
-        errors={showError[id] && errors[id]}
+        errors={errors[id]}
         handleOnFocus={this.handleOnFocus}
         type={type}
         optionList={optionList}
         valueList={valueList}
+        showError={showError[id]}
       />
     );
   }
