@@ -148,3 +148,7 @@ code {
 .customToast {
   min-height: 0px !important;
 }
+
+.navbar-brand {
+  font-size: 1rem !important;
+}

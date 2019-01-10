@@ -1,12 +1,19 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
-const GenericNavbar = ({ NavbarHeading, NavbarItems, NavbarLocations }) => {
+const GenericNavbar = ({
+  NavbarHeading,
+  NavbarItems,
+  NavbarLocations,
+  userData,
+  handleLogOut
+}) => {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
       <NavLink to="/" style={{ color: "white", paddingRight: "15px" }}>
         {NavbarHeading}
       </NavLink>
+
       <button
         className="navbar-toggler"
         type="button"
@@ -22,6 +29,19 @@ const GenericNavbar = ({ NavbarHeading, NavbarItems, NavbarLocations }) => {
       <div className="collapse navbar-collapse" id="navbarSupportedContent">
         <ul className="navbar-nav mr-auto">{renderNavbarItems()}</ul>
       </div>
+
+      {userData.name && <div className="navbar-brand">{userData.name}</div>}
+
+      {userData.name && (
+        <Link
+          to="/login"
+          className="navbar-brand"
+          style={{ cursor: "pointer" }}
+          onClick={handleLogOut}
+        >
+          <i className="fa fa-sign-out" aria-hidden="true" />
+        </Link>
+      )}
     </nav>
   );
 

@@ -43,18 +43,10 @@ class RegisterForm extends Form {
 
   doSubmit = async () => {
     try {
-      await userService.registerUser(this.state.data);
-      toast.success(
-        "The user " +
-          this.state.data.name +
-          " has been registered successfully!",
-        { className: "customToast" }
-      );
+      const { headers } = await userService.registerUser(this.state.data);
+      localStorage.setItem("token", headers["x-auth-token"]);
 
-      const data = { email: "", password: "", name: "" };
-      const showError = { email: true, password: false, name: false };
-      const errors = { initialKey: "NA" };
-      this.setState({ data, showError, errors });
+      this.props.history.replace("/");
     } catch (ex) {
       if (ex.response && ex.response.status === 400) {
         toast.error(ex.response.data, { className: "customToast" });
