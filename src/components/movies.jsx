@@ -11,6 +11,7 @@ import mobileCompat from "../utilities/mobileCompatibility";
 import Input from "./input";
 import genreService from "../services/genreService";
 import { ToastContainer, toast } from "react-toastify";
+import authService from "../services/authService";
 
 class Movies extends Component {
   state = {
@@ -188,6 +189,7 @@ class Movies extends Component {
       content.delete = (
         <button
           className="btn btn-danger myButton"
+          disabled={authService.getUser().isAdmin ? "" : "disabled"}
           onClick={() => this.handleDelete(content._id)}
         >
           Delete

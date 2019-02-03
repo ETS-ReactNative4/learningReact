@@ -3,6 +3,7 @@ import Joi from "joi-browser";
 import Form from "./form";
 import authService from "../services/authService";
 import { ToastContainer, toast } from "react-toastify";
+import { Redirect } from "react-router-dom";
 
 class LoginForm extends Form {
   state = {
@@ -23,6 +24,9 @@ class LoginForm extends Form {
   };
 
   render() {
+    const userData = authService.getUser();
+    if (Object.keys(userData).length > 1) return <Redirect to="/" />;
+
     return (
       <React.Fragment>
         <ToastContainer />
@@ -38,13 +42,16 @@ class LoginForm extends Form {
   }
 
   doSubmit = async () => {
-    try {
-      const { data: jwt } = await authService.loginUser(this.state.data);
-      localStorage.setItem("token", jwt);
-      this.props.history.replace("/");
-    } catch (ex) {
-      if (ex.response && ex.response.status === 400) {
-        toast.error(ex.response.data);
+    const response = await authService.loginUser(this.state.data);
+    if (response) {
+      toast.error(response);
+    } else {
+      this.props.onLogin();
+      const { state } = this.props.location;
+      if (state) {
+        this.props.history.replace(state.from);
+      } else {
+        this.props.history.replace("/");
       }
     }
   };

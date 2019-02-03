@@ -1,6 +1,8 @@
 {
-  "apiGenreEndPoint": "http://localhost:3900/api/genres",
-  "apiMovieEndPoint": "http://localhost:3900/api/movies",
-  "apiUserEndPoint": "http://localhost:3900/api/users",
-  "apiAuthEndPoint": "http://localhost:3900/api/auth"
+  "apiGenreEndPoint": "genres",
+  "apiMovieEndPoint": "movies",
+  "apiUserEndPoint": "users",
+  "apiAuthEndPoint": "auth",
+  "validationToken": "token",
+  "validatingHeader": "x-auth-token"
 }

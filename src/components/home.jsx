@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { Switch, Route, Redirect } from "react-router-dom";
-import jwtDecode from "jwt-decode";
 import GenericNavbar from "./genericNavbar";
 import Movies from "./movies";
 import App from "./../App";
@@ -9,55 +8,20 @@ import MovieForm from "./movieForm";
 import Welcome from "./welcome";
 import NotFound from "./notFound";
 import RegisterForm from "./registerForm";
+import authService from "../services/authService";
+import ProtectedRoute from "./protectedRoute";
 
 class Home extends Component {
   state = {
-    navHeader: ["Cart", "Movies", "Login", "Register"],
-    navLocation: ["/cart", "/movies", "/login", "/register"],
+    navHeader: ["Login", "Register"],
+    navLocation: ["/login", "/register"],
     userData: {},
     movie: null
   };
 
   componentDidMount() {
-    const jwt = localStorage.getItem("token");
-    if (jwt && jwt !== "") {
-      const userData = jwtDecode(jwt);
-      const navData = this.updateNavBarItems(true);
-      this.setState({
-        userData,
-        navHeader: navData.navHeader,
-        navLocation: navData.navLocation
-      });
-    }
-  }
-
-  componentDidUpdate() {
-    let userData = { ...this.state.userData };
-    if (Object.keys(userData).length === 0) {
-      const jwt = localStorage.getItem("token");
-      if (jwt && jwt !== "") {
-        userData = jwtDecode(jwt);
-        const navData = this.updateNavBarItems(true);
-        this.setState({
-          userData,
-          navHeader: navData.navHeader,
-          navLocation: navData.navLocation
-        });
-      }
-    }
-  }
-
-  updateNavBarItems(isUserLoggedIn) {
-    let navHeader = [];
-    let navLocation = [];
-    if (isUserLoggedIn) {
-      navHeader = ["Cart", "Movies"];
-      navLocation = ["/cart", "/movies"];
-    } else {
-      navHeader = ["Cart", "Movies", "Login", "Register"];
-      navLocation = ["/cart", "/movies", "/login", "/register"];
-    }
-    return { navHeader: navHeader, navLocation: navLocation };
+    window.addEventListener("storage", this.handleStorageChange);
+    this.updateUser();
   }
 
   render() {
@@ -72,25 +36,29 @@ class Home extends Component {
         />
         <Switch>
           <Route path="/not-found" exact component={NotFound} />
-          <Route
+          <ProtectedRoute
             path="/movies/add-movie"
-            exact
+            exact={true}
             render={props => <MovieForm {...props} />}
           />
-          <Route
+          <ProtectedRoute
             path="/movies/movie-details/:movieName"
-            exact
+            exact={true}
             render={props => <MovieForm movie={this.state.movie} {...props} />}
           />
-          <Route
+          <ProtectedRoute
             path="/movies"
-            exact
+            exact={true}
             render={props => (
               <Movies updateMovieDetail={this.updateMovieDetail} {...props} />
             )}
           />
-          <Route path="/cart" exact component={App} />
-          <Route path="/login" exact component={LoginForm} />
+          <ProtectedRoute path="/cart" exact={true} component={App} />
+          <Route
+            path="/login"
+            exact
+            render={props => <LoginForm onLogin={this.updateUser} {...props} />}
+          />
           <Route path="/register" exact component={RegisterForm} />
           <Route path="/" exact component={Welcome} />
           <Redirect to="/not-found" />
@@ -104,14 +72,29 @@ class Home extends Component {
   };
 
   handleLogOut = () => {
-    localStorage.removeItem("token");
-    const userData = {};
-    const navData = this.updateNavBarItems(false);
+    authService.logOut();
+    this.updateUser();
+  };
+
+  updateUser = () => {
+    const userData = authService.getUser();
+    const navHeader =
+      Object.keys(userData).length > 0
+        ? ["Cart", "Movies"]
+        : ["Login", "Register"];
+    let navLocation =
+      Object.keys(userData).length > 0
+        ? ["/cart", "/movies"]
+        : ["/login", "/register"];
     this.setState({
       userData,
-      navHeader: navData.navHeader,
-      navLocation: navData.navLocation
+      navHeader,
+      navLocation
     });
+  };
+
+  handleStorageChange = () => {
+    window.location = "/";
   };
 }
 
