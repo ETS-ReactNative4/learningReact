@@ -47,7 +47,7 @@ class Movies extends Component {
         defaultValue: false
       }
     ],
-    genres: ["LOADING..."],
+    genres: [],
     sortingProps: [],
     headerList: ["Title", "Genre", "Stock", "Rate", "", ""],
     bodyPropsName: [
@@ -62,6 +62,8 @@ class Movies extends Component {
   };
 
   async componentDidMount() {
+    this.props.displayLoader(true);
+
     const genres = await genreService.getGenres();
     const moviesInfo = await this.getUpdatedMovies(null, null, genres);
     const filterArray = this.updateFilterArray(moviesInfo.numberOfMovies);
@@ -70,6 +72,9 @@ class Movies extends Component {
       filterArray,
       genres
     });
+
+    this.props.displayLoader(false);
+
     mobileCompat();
   }
 

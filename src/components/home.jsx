@@ -16,7 +16,8 @@ class Home extends Component {
     navHeader: ["Login", "Register"],
     navLocation: ["/login", "/register"],
     userData: {},
-    movie: null
+    movie: null,
+    displayLoader: false
   };
 
   componentDidMount() {
@@ -34,6 +35,13 @@ class Home extends Component {
           userData={this.state.userData}
           handleLogOut={this.handleLogOut}
         />
+        <div
+          className="loader"
+          style={{ display: this.state.displayLoader ? "" : "none" }}
+          id="loader"
+        >
+          <img alt="Loading..." src="/copper-loader.gif" />
+        </div>
         <Switch>
           <Route path="/not-found" exact component={NotFound} />
           <ProtectedRoute
@@ -50,7 +58,11 @@ class Home extends Component {
             path="/movies"
             exact={true}
             render={props => (
-              <Movies updateMovieDetail={this.updateMovieDetail} {...props} />
+              <Movies
+                updateMovieDetail={this.updateMovieDetail}
+                displayLoader={this.handleLoader}
+                {...props}
+              />
             )}
           />
           <ProtectedRoute path="/cart" exact={true} component={App} />
@@ -95,6 +107,10 @@ class Home extends Component {
 
   handleStorageChange = () => {
     window.location = "/";
+  };
+
+  handleLoader = displayLoader => {
+    this.setState({ displayLoader });
   };
 }
 
