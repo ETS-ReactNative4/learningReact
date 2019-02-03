@@ -21,11 +21,9 @@ async function loginUser(loginData) {
 async function registerUser(user) {
   try {
     const { headers } = await httpService.post(config.apiUserEndPoint, user);
-    localStorage.setItem(
-      config.validationToken,
-      headers[config.validatingHeader]
-    );
-    httpService.updateHeader();
+    const jwt = headers[config.validatingHeader];
+    localStorage.setItem(config.validationToken, jwt);
+    httpService.setJWT(jwt);
   } catch (ex) {
     return ex.response.data;
   }

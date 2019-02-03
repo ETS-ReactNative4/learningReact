@@ -47,7 +47,7 @@ class Movies extends Component {
         defaultValue: false
       }
     ],
-    genres: [],
+    genres: ["LOADING..."],
     sortingProps: [],
     headerList: ["Title", "Genre", "Stock", "Rate", "", ""],
     bodyPropsName: [
