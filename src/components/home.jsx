@@ -69,9 +69,25 @@ class Home extends Component {
           <Route
             path="/login"
             exact
-            render={props => <LoginForm onLogin={this.updateUser} {...props} />}
+            render={props => (
+              <LoginForm
+                onLogin={this.updateUser}
+                displayLoader={this.handleLoader}
+                {...props}
+              />
+            )}
           />
-          <Route path="/register" exact component={RegisterForm} />
+          <Route
+            path="/register"
+            exact
+            render={props => (
+              <RegisterForm
+                onLogin={this.updateUser}
+                displayLoader={this.handleLoader}
+                {...props}
+              />
+            )}
+          />
           <Route path="/" exact component={Welcome} />
           <Redirect to="/not-found" />
         </Switch>

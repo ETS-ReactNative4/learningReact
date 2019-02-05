@@ -46,12 +46,17 @@ class RegisterForm extends Form {
   }
 
   doSubmit = async () => {
+    this.props.displayLoader(true);
+
     const response = await authService.registerUser(this.state.data);
     if (response) {
       toast.error(response);
     } else {
+      this.props.onLogin();
       this.props.history.replace("/");
     }
+
+    this.props.displayLoader(false);
   };
 }
 

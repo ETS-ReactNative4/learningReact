@@ -42,6 +42,8 @@ class LoginForm extends Form {
   }
 
   doSubmit = async () => {
+    this.props.displayLoader(true);
+
     const response = await authService.loginUser(this.state.data);
     if (response) {
       toast.error(response);
@@ -54,6 +56,8 @@ class LoginForm extends Form {
         this.props.history.replace("/");
       }
     }
+
+    this.props.displayLoader(false);
   };
 }
 
