@@ -2,8 +2,7 @@ import httpService from "./httpService";
 import config from "../config.json";
 import _ from "lodash";
 
-async function getMoviesPerPage(moviePerPage, pageNumber, genreID) {
-  const { data: movies } = await httpService.get(config.apiMovieEndPoint);
+function getMoviesPerPage(movies, moviePerPage, pageNumber, genreID) {
   const genreMovies =
     genreID === "0"
       ? movies
@@ -25,6 +24,11 @@ async function getMoviesPerPage(moviePerPage, pageNumber, genreID) {
       .value(),
     totalNumberOfMovies: genreMovies.length
   };
+}
+
+async function getMovies() {
+  const { data: movies } = await httpService.get(config.apiMovieEndPoint);
+  return movies;
 }
 
 async function deleteMovie(id) {
@@ -51,6 +55,7 @@ async function updateMovie(movie) {
 }
 
 export default {
+  getMovies,
   getMoviesPerPage,
   deleteMovie,
   saveMovie,

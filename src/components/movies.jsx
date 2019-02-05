@@ -16,6 +16,7 @@ import authService from "../services/authService";
 class Movies extends Component {
   state = {
     pageNumber: 1,
+    allMovies: [],
     moviesInfo: { movies: [], totalNumberOfMovies: 0 },
     filterArray: [
       {
@@ -64,13 +65,21 @@ class Movies extends Component {
   async componentDidMount() {
     this.props.displayLoader(true);
 
+    const allMovies = await movieService.getMovies();
     const genres = await genreService.getGenres();
-    const moviesInfo = await this.getUpdatedMovies(null, null, genres);
+    const moviesInfo = await this.getUpdatedMovies(
+      null,
+      null,
+      genres,
+      allMovies
+    );
     const filterArray = this.updateFilterArray(moviesInfo.numberOfMovies);
+
     this.setState({
       moviesInfo,
       filterArray,
-      genres
+      genres,
+      allMovies
     });
 
     this.props.displayLoader(false);
@@ -296,21 +305,23 @@ class Movies extends Component {
   };
 
   handleDelete = async id => {
-    await movieService.deleteMovie(id);
-
     let pageNumber = this.state.pageNumber;
     if (pageNumber > 1 && this.state.moviesInfo.movies.length === 1) {
       pageNumber--;
     }
-    const moviesInfo = await this.getUpdatedMovies(pageNumber);
+    const allMovies = this.state.allMovies.filter(movie => movie._id != id);
+    const moviesInfo = this.getUpdatedMovies(pageNumber, null, null, allMovies);
 
     this.setState({
       pageNumber,
       moviesInfo,
-      filterArray: this.updateFilterArray(moviesInfo.totalNumberOfMovies)
+      filterArray: this.updateFilterArray(moviesInfo.totalNumberOfMovies),
+      allMovies
     });
 
     toast.success("Movie deleted", { className: "customToast" });
+
+    await movieService.deleteMovie(id);
   };
 
   handleLike = id => {
@@ -432,20 +443,14 @@ class Movies extends Component {
     return filterArray;
   }
 
-  async getUpdatedMovies(pageNumber, filterArray, genres) {
-    if (!pageNumber) {
-      pageNumber = this.state.pageNumber;
-    }
+  getUpdatedMovies(pageNumber, filterArray, genres, allMovies) {
+    pageNumber = pageNumber || this.state.pageNumber;
+    filterArray = filterArray || this.state.filterArray;
+    genres = genres || this.state.genres;
+    allMovies = allMovies || this.state.allMovies;
 
-    if (!filterArray) {
-      filterArray = this.state.filterArray;
-    }
-
-    if (!genres) {
-      genres = this.state.genres;
-    }
-
-    const moviesInfo = await movieService.getMoviesPerPage(
+    const moviesInfo = movieService.getMoviesPerPage(
+      allMovies,
       filterArray.filter(filter => filter.filterActive)[0].filterValue,
       pageNumber,
       genres.filter(genre => genre.active === true)[0]._id
